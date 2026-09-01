@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Auditoría Técnica de Menaje v3.5</title>
+    <title>Auditoría Técnica de Menaje v4.2</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -146,6 +146,35 @@
             background-color: var(--border-color);
         }
 
+        /* ESTILOS PARA DIAGRAMA GEOMÉTRICO */
+        .diagram-container {
+            background: #0f172a;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .diagram-svg {
+            width: 100%;
+            max-width: 320px;
+            height: 140px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .shape-badge {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            background-color: #334155;
+            color: #38bdf8;
+        }
+
         .btn-grid, .btn-grid-4 {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -206,6 +235,10 @@
             background-color: #059669;
         }
 
+        .btn-danger {
+            background-color: #ef4444;
+        }
+
         .protocol-note {
             font-size: 0.8rem;
             color: var(--text-muted);
@@ -250,29 +283,29 @@
         <div class="grid-2">
             <div class="form-group">
                 <label>Marca</label>
-                <input type="text" id="marca" placeholder="Ej. BRA, Monix...">
+                <input type="text" id="marca" placeholder="Ej. BRA, Monix..." oninput="guardarEstado()">
             </div>
             <div class="form-group">
                 <label>Modelo</label>
-                <input type="text" id="modelo" placeholder="Ej. Efficient...">
+                <input type="text" id="modelo" placeholder="Ej. Efficient..." oninput="guardarEstado()">
             </div>
         </div>
 
         <div class="grid-2">
             <div class="form-group">
-                <label>Diámetro Nominal (cm)</label>
-                <input type="number" id="diametro" placeholder="Ej. 24" step="0.5" oninput="calcularMetrologia()">
+                <label>Diámetro Superior (Borde cm)</label>
+                <input type="number" id="diametro" placeholder="Ej. 28" step="0.1" oninput="calcularMetrologia()">
             </div>
             <div class="form-group">
                 <label>Peso (gramos)</label>
-                <input type="number" id="peso" placeholder="Ej. 850" step="5">
+                <input type="number" id="peso" placeholder="Ej. 850" step="5" oninput="guardarEstado()">
             </div>
         </div>
 
         <div class="grid-2">
             <div class="form-group">
                 <label>Tipo de Pieza</label>
-                <select id="tipo">
+                <select id="tipo" onchange="guardarEstado()">
                     <option value="Sartén">Sartén</option>
                     <option value="Olla">Olla</option>
                     <option value="Cacerola">Cacerola</option>
@@ -297,7 +330,7 @@
 
     <!-- 2. METROLOGÍA DE FONDO, PARED E INDUCCIÓN -->
     <div class="card">
-        <h2>2. Metrología y Geometría</h2>
+        <h2>2. Metrología y Geometría de Base</h2>
         
         <label>A. Espesor de Fondo Difusor (Cálculo)</label>
         <div class="grid-2">
@@ -328,15 +361,36 @@
             <div id="badge-pared" class="status-badge">Sin Medición</div>
         </div>
 
+        <label>C. Superficie Útil y Disco de Inducción</label>
         <div class="grid-2">
             <div class="form-group">
-                <label>Disco Inducción (cm)</label>
-                <input type="number" id="diametroInduccion" step="0.1" placeholder="Ej: 17.5" oninput="calcularMetrologia()">
+                <label>Base Real Útil / Llana (cm)</label>
+                <input type="number" id="diametroBaseReal" step="0.1" placeholder="Ej: 23.0" oninput="calcularMetrologia()">
             </div>
             <div class="form-group">
-                <label>% Captación Inducción</label>
+                <label>Disco Inducción / Ferromagnético (cm)</label>
+                <input type="number" id="diametroInduccion" step="0.1" placeholder="Ej: 22.2" oninput="calcularMetrologia()">
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="form-group">
+                <label>% Útil vs Borde</label>
+                <input type="text" id="pctUtil" readonly placeholder="-%" style="text-align: center;">
+            </div>
+            <div class="form-group">
+                <label>% Cobertura Inducción / Base</label>
                 <input type="text" id="pctInduccion" readonly placeholder="-%" style="text-align: center;">
             </div>
+        </div>
+
+        <!-- RECUADRO Y DIAGRAMA VISUAL -->
+        <div class="diagram-container">
+            <label>Esquema Perfil y Proporción</label>
+            <div id="badge-geometria" class="shape-badge">Introduce medidas</div>
+            <svg class="diagram-svg" viewBox="0 0 300 130" id="svg-diagram">
+                <!-- Se renderiza dinámicamente mediante JS -->
+            </svg>
         </div>
     </div>
 
@@ -390,7 +444,7 @@
         
         <div class="form-group">
             <label>Tipo / Fogón Usado</label>
-            <input type="text" id="fogonUsado" placeholder="Ej: Inducción 18 cm, Vitro 19 cm">
+            <input type="text" id="fogonUsado" placeholder="Ej: Inducción 18 cm, Vitro 19 cm" oninput="guardarEstado()">
         </div>
 
         <div class="grid-2">
@@ -426,11 +480,12 @@
     <div class="card">
         <h2>5. Observaciones Finales</h2>
         <div class="form-group">
-            <textarea id="notasAnalisis" rows="3" placeholder="Comentarios del directo, calidad del antiadherente, ergonomía..."></textarea>
+            <textarea id="notasAnalisis" rows="3" placeholder="Comentarios del directo, calidad del antiadherente, ergonomía..." oninput="guardarEstado()"></textarea>
         </div>
 
         <button class="btn-main" onclick="guardarFicha()">Guardar en Comparador</button>
         <button class="btn-main btn-excel" onclick="exportarCSV()">Exportar Auditoría Actual a Excel (.CSV)</button>
+        <button class="btn-main btn-danger" style="margin-top: 10px;" onclick="limpiarFormulario()">Limpiar Formulario Actual</button>
     </div>
 
     <!-- COMPARADOR DE PIEZAS -->
@@ -461,17 +516,27 @@
         let estadoFondo = { texto: "Sin datos", color: "var(--border-color)" };
         let estadoPared = { texto: "Sin datos", color: "var(--border-color)" };
 
+        window.onload = function() {
+            cargarEstado();
+        };
+
+        function parseInputNumber(id) {
+            const val = document.getElementById(id).value.replace(',', '.');
+            return parseFloat(val) || 0;
+        }
+
         function setOpt(grupo, valor, btn) {
             selecciones[grupo] = valor;
             const parent = btn.parentElement;
             parent.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            guardarEstado();
         }
 
         function calcularMetrologia() {
             // 1. Cálculo del Fondo por diferencia
-            const mint = parseFloat(document.getElementById('mint').value) || 0;
-            const mext = parseFloat(document.getElementById('mext').value) || 0;
+            const mint = parseInputNumber('mint');
+            const mext = parseInputNumber('mext');
             const displayFondo = document.getElementById('resultado-fondo');
             const badgeFondo = document.getElementById('badge-fondo');
 
@@ -496,7 +561,7 @@
             }
 
             // 2. Pared
-            const paredVal = parseFloat(document.getElementById('grosor-pared').value) || 0;
+            const paredVal = parseInputNumber('grosor-pared');
             const displayPared = document.getElementById('resultado-pared');
             const badgePared = document.getElementById('badge-pared');
 
@@ -518,21 +583,55 @@
                 badgePared.style.backgroundColor = "var(--border-color)";
             }
 
-            // 3. Captación de Inducción
-            const diamNom = parseFloat(document.getElementById('diametro').value) || 0;
-            const diamInd = parseFloat(document.getElementById('diametroInduccion').value) || 0;
-            const inputPct = document.getElementById('pctInduccion');
+            // 3. Geometría: Superficie Útil, Cobertura y Diagrama
+            const diamNom = parseInputNumber('diametro');
+            const diamBase = parseInputNumber('diametroBaseReal');
+            const diamInd = parseInputNumber('diametroInduccion');
+            
+            const inputPctUtil = document.getElementById('pctUtil');
+            const inputPctInd = document.getElementById('pctInduccion');
+            const badgeGeo = document.getElementById('badge-geometria');
 
-            if (diamNom > 0 && diamInd > 0) {
-                let pct = ((diamInd / diamNom) * 100).toFixed(1);
-                inputPct.value = `${pct}%`;
+            let pctUVal = 0;
+            let pctIVal = 0;
+
+            if (diamNom > 0 && diamBase > 0) {
+                pctUVal = (diamBase / diamNom) * 100;
+                inputPctUtil.value = `${pctUVal.toFixed(1)}%`;
+
+                // Clasificación de la forma
+                if (pctUVal >= 88) {
+                    badgeGeo.innerText = "Sartén / Cazuela Recta";
+                    badgeGeo.style.color = "#38bdf8";
+                } else if (pctUVal >= 75) {
+                    badgeGeo.innerText = "Sartén Troncocónica Estándar";
+                    badgeGeo.style.color = "#f59e0b";
+                } else {
+                    badgeGeo.innerText = "Sartén Troncocónica Pronunciada (Acampanada)";
+                    badgeGeo.style.color = "#ef4444";
+                }
             } else {
-                inputPct.value = "-%";
+                inputPctUtil.value = "-%";
+                badgeGeo.innerText = "Introduce medidas para diagnóstico";
+                badgeGeo.style.color = "#94a3b8";
             }
 
+            if (diamBase > 0 && diamInd > 0) {
+                pctIVal = (diamInd / diamBase) * 100;
+                inputPctInd.value = `${pctIVal.toFixed(1)}%`;
+            } else if (diamNom > 0 && diamInd > 0) {
+                pctIVal = (diamInd / diamNom) * 100;
+                inputPctInd.value = `${pctIVal.toFixed(1)}% (vs Borde)`;
+            } else {
+                inputPctInd.value = "-%";
+            }
+
+            // Actualización Dinámica del Esquema SVG con Porcentajes
+            actualizarDiagrama(diamNom, diamBase, diamInd);
+
             // 4. Diagnóstico Térmico
-            const tCentro = parseFloat(document.getElementById('tempCentro').value) || 0;
-            const tBorde = parseFloat(document.getElementById('tempBorde').value) || 0;
+            const tCentro = parseInputNumber('tempCentro');
+            const tBorde = parseInputNumber('tempBorde');
             const displayDelta = document.getElementById('resultado-delta');
             const badgeDelta = document.getElementById('badge-delta');
 
@@ -555,6 +654,61 @@
                 badgeDelta.innerText = "Sin Datos Térmicos";
                 badgeDelta.style.backgroundColor = "var(--border-color)";
             }
+
+            guardarEstado();
+        }
+
+        function actualizarDiagrama(nom, base, ind) {
+            const svg = document.getElementById('svg-diagram');
+            
+            let dNom = nom > 0 ? nom : 28;
+            let dBase = base > 0 ? base : 22;
+            let dInd = ind > 0 ? ind : 18;
+
+            const maxWidth = 220;
+            const cx = 150;
+            
+            let wNom = maxWidth;
+            let wBase = (dBase / dNom) * maxWidth;
+            let wInd = (dInd / dNom) * maxWidth;
+
+            if (wBase > maxWidth) wBase = maxWidth;
+            if (wInd > wBase) wInd = wBase;
+
+            let x1Top = cx - (wNom / 2);
+            let x2Top = cx + (wNom / 2);
+            
+            let x1Bot = cx - (wBase / 2);
+            let x2Bot = cx + (wBase / 2);
+
+            let x1Ind = cx - (wInd / 2);
+            let x2Ind = cx + (wInd / 2);
+
+            // Cálculo de porcentajes para incluir en el esquema gráfico
+            let pctUText = nom > 0 && base > 0 ? ((base / nom) * 100).toFixed(1) + '%' : '-';
+            let pctIText = base > 0 && ind > 0 ? ((ind / base) * 100).toFixed(1) + '%' : '-';
+
+            svg.innerHTML = `
+                <!-- Borde Superior -->
+                <line x1="${x1Top}" y1="25" x2="${x2Top}" y2="25" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4"/>
+                
+                <!-- Cuerpo Sartén -->
+                <polygon points="${x1Top},25 ${x1Bot},85 ${x2Bot},85 ${x2Top},25" fill="rgba(56, 189, 248, 0.05)" stroke="#38bdf8" stroke-width="3"/>
+                
+                <!-- Porcentaje de Superficie Útil (En el centro interior) -->
+                <text x="${cx}" y="58" fill="#f59e0b" font-size="12" font-weight="bold" text-anchor="middle">Útil: ${pctUText}</text>
+                
+                <!-- Base Real -->
+                <line x1="${x1Bot}" y1="85" x2="${x2Bot}" y2="85" stroke="#f59e0b" stroke-width="4"/>
+                
+                <!-- Disco Inducción -->
+                <line x1="${x1Ind}" y1="94" x2="${x2Ind}" y2="94" stroke="#10b981" stroke-width="5"/>
+                
+                <!-- Textos de medidas y porcentajes -->
+                <text x="${cx}" y="17" fill="#94a3b8" font-size="10" text-anchor="middle">Ø Sup: ${dNom} cm</text>
+                <text x="${cx}" y="80" fill="#f59e0b" font-size="9" text-anchor="middle">Base Útil: ${base > 0 ? dBase + ' cm' : '-'}</text>
+                <text x="${cx}" y="114" fill="#10b981" font-size="10" font-weight="bold" text-anchor="middle">Disco Ind: ${ind > 0 ? dInd + ' cm' : '-'} (${pctIText})</text>
+            `;
         }
 
         function guardarFicha() {
@@ -562,7 +716,7 @@
             const modelo = document.getElementById('modelo').value || 'S/D';
             const diam = document.getElementById('diametro').value || '-';
             const peso = document.getElementById('peso').value || '-';
-            const paredVal = parseFloat(document.getElementById('grosor-pared').value) || 0;
+            const paredVal = parseInputNumber('grosor-pared');
 
             if (fondoCalc === 0 && paredVal === 0) {
                 alert("Introduce al menos una medida antes de guardar.");
@@ -583,6 +737,7 @@
             });
 
             actualizarTabla();
+            guardarEstado();
         }
 
         function actualizarTabla() {
@@ -605,6 +760,7 @@
         function limpiarComparador() {
             datosGuardados = [];
             actualizarTabla();
+            guardarEstado();
         }
 
         function exportarCSV() {
@@ -618,12 +774,15 @@
                 ["Modelo", modelo],
                 ["Tipo de Pieza", document.getElementById('tipo').value],
                 ["Material", document.getElementById('material').value],
-                ["Diametro (cm)", document.getElementById('diametro').value],
+                ["Diametro Superior Borde (cm)", document.getElementById('diametro').value],
+                ["Base Real Util Llana (cm)", document.getElementById('diametroBaseReal').value],
+                ["Clasificacion Forma", document.getElementById('badge-geometria').innerText],
+                ["% Util vs Borde", document.getElementById('pctUtil').value],
+                ["Disco Induccion (cm)", document.getElementById('diametroInduccion').value],
+                ["% Cobertura Induccion", document.getElementById('pctInduccion').value],
                 ["Peso (g)", document.getElementById('peso').value],
                 ["Grosor Fondo (mm)", fondoCalc],
                 ["Grosor Pared (mm)", document.getElementById('grosor-pared').value],
-                ["Disco Induccion (cm)", document.getElementById('diametroInduccion').value],
-                ["% Captacion Induccion", document.getElementById('pctInduccion').value],
                 ["Fijacion Mango", selecciones.fijacion],
                 ["Material Mango", selecciones.materialMango],
                 ["Termica Mango", selecciones.termica],
@@ -648,6 +807,79 @@
             document.body.appendChild(enlace);
             enlace.click();
             document.body.removeChild(enlace);
+        }
+
+        function guardarEstado() {
+            const estado = {
+                inputs: {
+                    marca: document.getElementById('marca').value,
+                    modelo: document.getElementById('modelo').value,
+                    diametro: document.getElementById('diametro').value,
+                    peso: document.getElementById('peso').value,
+                    tipo: document.getElementById('tipo').value,
+                    material: document.getElementById('material').value,
+                    mint: document.getElementById('mint').value,
+                    mext: document.getElementById('mext').value,
+                    grosorPared: document.getElementById('grosor-pared').value,
+                    diametroBaseReal: document.getElementById('diametroBaseReal').value,
+                    diametroInduccion: document.getElementById('diametroInduccion').value,
+                    fogonUsado: document.getElementById('fogonUsado').value,
+                    tempCentro: document.getElementById('tempCentro').value,
+                    tempBorde: document.getElementById('tempBorde').value,
+                    tempPared: document.getElementById('tempPared').value,
+                    tempRetencion: document.getElementById('tempRetencion').value,
+                    notasAnalisis: document.getElementById('notasAnalisis').value
+                },
+                selecciones: selecciones,
+                datosGuardados: datosGuardados
+            };
+            localStorage.setItem('auditoria_menaje_datos', JSON.stringify(estado));
+        }
+
+        function cargarEstado() {
+            const guardado = localStorage.getItem('auditoria_menaje_datos');
+            if (!guardado) return;
+
+            const estado = JSON.parse(guardado);
+            if (estado.inputs) {
+                Object.keys(estado.inputs).forEach(key => {
+                    const el = document.getElementById(key === 'grosorPared' ? 'grosor-pared' : key);
+                    if (el) el.value = estado.inputs[key];
+                });
+            }
+
+            if (estado.selecciones) {
+                selecciones = estado.selecciones;
+                Object.keys(selecciones).forEach(grupo => {
+                    const val = selecciones[grupo];
+                    if (val) {
+                        const btns = document.querySelectorAll(`#group-${grupo.replace(/([A-Z])/g, '-$1').toLowerCase()} .btn-opt`);
+                        btns.forEach(b => {
+                            if (b.innerText.includes(val) || val.includes(b.innerText)) {
+                                b.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }
+
+            if (estado.datosGuardados) {
+                datosGuardados = estado.datosGuardados;
+                actualizarTabla();
+            }
+
+            calcularMetrologia();
+        }
+
+        function limpiarFormulario() {
+            if (confirm("¿Quieres borrar los datos de la auditoría actual?")) {
+                const campos = ['marca', 'modelo', 'diametro', 'peso', 'mint', 'mext', 'grosor-pared', 'diametroBaseReal', 'diametroInduccion', 'fogonUsado', 'tempBorde', 'tempPared', 'tempRetencion', 'notasAnalisis'];
+                campos.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+                document.getElementById('tempCentro').value = '180';
+                selecciones = { fijacion: '', materialMango: '', termica: '', vertido: '' };
+                document.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('active'));
+                calcularMetrologia();
+            }
         }
     </script>
 </body>
