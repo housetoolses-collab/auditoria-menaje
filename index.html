@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Auditoría Técnica de Menaje</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #2563eb;
+            --accent-blue-hover: #1d4ed8;
+            --status-red: #ef4444;
+            --status-yellow: #f59e0b;
+            --status-green: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        body {
+            padding: 12px;
+            max-width: 100%;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        .header-title {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 8px 0;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 14px;
+            color: #93c5fd;
+            text-transform: uppercase;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 14px;
+            width: 100%;
+        }
+
+        h2 {
+            font-size: 1.05rem;
+            color: #f1f5f9;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        @media (max-width: 480px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        input, select {
+            width: 100%;
+            background-color: #0f172a;
+            border: 1.5px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .input-large {
+            font-size: 1.5rem;
+            text-align: center;
+            padding: 8px;
+        }
+
+        .metric-display {
+            text-align: center;
+            padding: 12px;
+            background: #0f172a;
+            border-radius: 8px;
+            border: 1.5px solid var(--border-color);
+            margin-top: 8px;
+        }
+
+        .thickness-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin: 6px 0;
+        }
+
+        .status-badge {
+            display: block;
+            padding: 8px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #ffffff;
+            background-color: var(--border-color);
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+        }
+
+        .btn-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+        }
+
+        .btn-opt {
+            padding: 10px 4px;
+            background-color: #0f172a;
+            border: 1.5px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-opt.active {
+            background-color: var(--accent-blue);
+            border-color: #60a5fa;
+            color: #ffffff;
+        }
+
+        .btn-opt.green.active { background-color: var(--status-green); border-color: #34d399; color: #fff; }
+        .btn-opt.yellow.active { background-color: var(--status-yellow); border-color: #fbbf24; color: #000; }
+        .btn-opt.red.active { background-color: var(--status-red); border-color: #f87171; color: #fff; }
+
+        .btn-main {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-muted);
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 0.8rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 8px 4px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #0f172a;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-title">AUDITORÍA TÉCNICA DE MENAJE</div>
+
+    <!-- 1. DATOS DE LA PIEZA -->
+    <div class="card">
+        <h2>1. Datos de la Pieza</h2>
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Marca</label>
+                <input type="text" id="marca" placeholder="Ej. BRA, Monix...">
+            </div>
+            <div class="form-group">
+                <label>Modelo</label>
+                <input type="text" id="modelo" placeholder="Ej. Efficient...">
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Diámetro (cm)</label>
+                <input type="number" id="diametro" placeholder="Ej. 24" step="0.5">
+            </div>
+            <div class="form-group">
+                <label>Peso (gramos)</label>
+                <input type="number" id="peso" placeholder="Ej. 850" step="5">
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Tipo de Pieza</label>
+                <select id="tipo">
+                    <option value="Sartén">Sartén</option>
+                    <option value="Olla">Olla</option>
+                    <option value="Cacerola">Cacerola</option>
+                    <option value="Cazo">Cazo</option>
+                    <option value="Wok">Wok</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Material / Fabricación</label>
+                <select id="material">
+                    <option value="Alum. Prensado">Aluminio Prensado</option>
+                    <option value="Alum. Forjado">Aluminio Forjado</option>
+                    <option value="Alum. Fundido">Aluminio Fundido</option>
+                    <option value="Inox (Fondo Difusor)">Acero Inox (Fondo Difusor)</option>
+                    <option value="Inox (Multicapa/Tri-Ply)">Acero Inox (Multicapa)</option>
+                    <option value="Hierro Fundido">Hierro Fundido</option>
+                    <option value="Acero Carbono">Acero al Carbono</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. METROLOGÍA -->
+    <div class="card">
+        <h2>2. Metrología de Fondo y Pared</h2>
+        
+        <label>A. Espesor de Fondo Difusor (Cálculo)</label>
+        <div class="grid-2">
+            <div class="form-group">
+                <label style="font-size:0.7rem;">Profundidad Int. (mm)</label>
+                <input type="number" id="mint" class="input-large" step="0.1" placeholder="0.0" oninput="calcularMetrologia()">
+            </div>
+            <div class="form-group">
+                <label style="font-size:0.7rem;">Altura Ext. (mm)</label>
+                <input type="number" id="mext" class="input-large" step="0.1" placeholder="0.0" oninput="calcularMetrologia()">
+            </div>
+        </div>
+
+        <div class="metric-display" style="margin-bottom: 12px;">
+            <label>Grosor de Fondo</label>
+            <div id="resultado-fondo" class="thickness-value">0.0 mm</div>
+            <div id="badge-fondo" class="status-badge">Sin Medición</div>
+        </div>
+
+        <label>B. Espesor de Pared / Borde (Calibre)</label>
+        <div class="form-group">
+            <input type="number" id="grosor-pared" class="input-large" step="0.1" placeholder="0.0" oninput="calcularMetrologia()">
+        </div>
+
+        <div class="metric-display">
+            <label>Grosor de Pared</label>
+            <div id="resultado-pared" class="thickness-value">0.0 mm</div>
+            <div id="badge-pared" class="status-badge">Sin Medición</div>
+        </div>
+    </div>
+
+    <!-- 3. MONTAJE Y ERGONOMÍA -->
+    <div class="card">
+        <h2>3. Montaje y Ergonomía</h2>
+        
+        <div class="form-group">
+            <label>Fijación del Mango/Asas</label>
+            <div class="btn-grid-4" id="group-fijacion">
+                <button class="btn-opt" onclick="setOpt('fijacion', 'Remachado', this)">Remachado</button>
+                <button class="btn-opt" onclick="setOpt('fijacion', 'Soldado', this)">Soldado</button>
+                <button class="btn-opt" onclick="setOpt('fijacion', 'Atornillado', this)">Atornillado</button>
+                <button class="btn-opt" onclick="setOpt('fijacion', 'Extraíble', this)">Extraíble</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Material del Mango</label>
+            <div class="btn-grid-4" id="group-material-mango">
+                <button class="btn-opt" onclick="setOpt('material-mango', 'Baquelita', this)">Baquelita</button>
+                <button class="btn-opt" onclick="setOpt('material-mango', 'Inox Hueco', this)">Inox Hueco</button>
+                <button class="btn-opt" onclick="setOpt('material-mango', 'Silicona', this)">Silicona</button>
+                <button class="btn-opt" onclick="setOpt('material-mango', 'Hierro', this)">Hierro</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Térmica del Mango</label>
+            <div class="btn-grid" id="group-termica">
+                <button class="btn-opt green" onclick="setOpt('termica', 'Aislado (Frío)', this)">Frío / Seguro</button>
+                <button class="btn-opt red" onclick="setOpt('termica', 'Quema', this)">Quema (Peligro)</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Control de Vertido</label>
+            <div class="btn-grid" id="group-vertido">
+                <button class="btn-opt green" onclick="setOpt('vertido', 'Antigoteo', this)">Borde Antigoteo</button>
+                <button class="btn-opt yellow" onclick="setOpt('vertido', 'Borde Recto', this)">Borde Recto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACCIONES Y COMPARADOR -->
+    <button class="btn-main" onclick="guardarFicha()">Guardar en Comparador</button>
+
+    <div class="card" style="margin-top: 14px;">
+        <h2>Comparador (Máx. 3)</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pieza</th>
+                        <th>Medidas</th>
+                        <th>Fondo</th>
+                        <th>Pared</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-comparador">
+                    <tr><td colspan="4" style="color: var(--text-muted);">Sin datos guardados</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <button class="btn-main btn-secondary" style="margin-top: 10px; padding: 8px; font-size: 0.8rem;" onclick="limpiarComparador()">Limpiar Comparador</button>
+    </div>
+
+    <script>
+        let selecciones = { fijacion: '', materialMango: '', termica: '', vertido: '' };
+        let datosGuardados = [];
+        let fondoCalc = 0;
+        let estadoFondo = { texto: "Sin datos", color: "var(--border-color)" };
+        let estadoPared = { texto: "Sin datos", color: "var(--border-color)" };
+
+        function setOpt(grupo, valor, btn) {
+            selecciones[grupo] = valor;
+            const parent = btn.parentElement;
+            parent.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function calcularMetrologia() {
+            // Fondo
+            const mint = parseFloat(document.getElementById('mint').value) || 0;
+            const mext = parseFloat(document.getElementById('mext').value) || 0;
+            const displayFondo = document.getElementById('resultado-fondo');
+            const badgeFondo = document.getElementById('badge-fondo');
+
+            if (mext > 0 && mint > 0 && mext >= mint) {
+                fondoCalc = (mext - mint).toFixed(1);
+                displayFondo.innerText = `${fondoCalc} mm`;
+
+                if (fondoCalc < 2.5) {
+                    estadoFondo = { texto: "Gama Baja / Prensado", color: "var(--status-red)" };
+                } else if (fondoCalc <= 3.8) {
+                    estadoFondo = { texto: "Gama Media / Aceptable", color: "var(--status-yellow)" };
+                } else {
+                    estadoFondo = { texto: "Gama Alta / Gran Retención", color: "var(--status-green)" };
+                }
+                badgeFondo.innerText = estadoFondo.texto;
+                badgeFondo.style.backgroundColor = estadoFondo.color;
+            } else {
+                fondoCalc = 0;
+                displayFondo.innerText = "0.0 mm";
+                badgeFondo.innerText = "Sin Medición";
+                badgeFondo.style.backgroundColor = "var(--border-color)";
+            }
+
+            // Pared
+            const paredVal = parseFloat(document.getElementById('grosor-pared').value) || 0;
+            const displayPared = document.getElementById('resultado-pared');
+            const badgePared = document.getElementById('badge-pared');
+
+            if (paredVal > 0) {
+                displayPared.innerText = `${paredVal.toFixed(1)} mm`;
+
+                if (paredVal < 1.8) {
+                    estadoPared = { texto: "Pared Delgada / Frágil", color: "var(--status-red)" };
+                } else if (paredVal <= 3.0) {
+                    estadoPared = { texto: "Pared Estándar", color: "var(--status-yellow)" };
+                } else {
+                    estadoPared = { texto: "Pared Robusta / Pesada", color: "var(--status-green)" };
+                }
+                badgePared.innerText = estadoPared.texto;
+                badgePared.style.backgroundColor = estadoPared.color;
+            } else {
+                displayPared.innerText = "0.0 mm";
+                badgePared.innerText = "Sin Medición";
+                badgePared.style.backgroundColor = "var(--border-color)";
+            }
+        }
+
+        function guardarFicha() {
+            const marca = document.getElementById('marca').value || 'S/D';
+            const modelo = document.getElementById('modelo').value || 'S/D';
+            const diam = document.getElementById('diametro').value || '-';
+            const peso = document.getElementById('peso').value || '-';
+            const paredVal = parseFloat(document.getElementById('grosor-pared').value) || 0;
+
+            if (fondoCalc === 0 && paredVal === 0) {
+                alert("Introduce al menos una medida antes de guardar.");
+                return;
+            }
+
+            if (datosGuardados.length >= 3) {
+                datosGuardados.shift();
+            }
+
+            datosGuardados.push({
+                nombre: `${marca} ${modelo}`,
+                medidas: `Ø${diam}cm / ${peso}g`,
+                fondo: `${fondoCalc} mm`,
+                fondoColor: estadoFondo.color,
+                pared: `${paredVal.toFixed(1)} mm`,
+                paredColor: estadoPared.color
+            });
+
+            actualizarTabla();
+        }
+
+        function actualizarTabla() {
+            const tbody = document.getElementById('tabla-comparador');
+            if (datosGuardados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="color: var(--text-muted);">Sin datos guardados</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = datosGuardados.map(item => `
+                <tr>
+                    <td><strong>${item.nombre}</strong></td>
+                    <td style="font-size: 0.75rem;">${item.medidas}</td>
+                    <td style="font-weight: bold; color: ${item.fondoColor};">${item.fondo}</td>
+                    <td style="font-weight: bold; color: ${item.paredColor};">${item.pared}</td>
+                </tr>
+            `).join('');
+        }
+
+        function limpiarComparador() {
+            datosGuardados = [];
+            actualizarTabla();
+        }
+    </script>
+</body>
+</html>
