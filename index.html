@@ -1,9 +1,11 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Auditoría Técnica de Menaje v7.0</title>
+    <title>Auditoría Técnica de Menaje v7.0 (Completa)</title>
+    <!-- Librería para exportación nativa a Excel (.xlsx) sin backend -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -52,9 +54,9 @@
 
         .btn-main { width: 100%; padding: 14px; background-color: var(--accent-blue); color: white; border: none; border-radius: 6px; font-size: 0.95rem; font-weight: bold; text-transform: uppercase; cursor: pointer; margin-top: 8px; }
         .btn-main:hover { background-color: var(--accent-blue-hover); }
-        .btn-secondary { background-color: transparent; border: 2px solid var(--border-color); color: var(--text-muted); }
         .btn-excel { background-color: #10b981; }
         .btn-excel:hover { background-color: #059669; }
+        .btn-secondary { background-color: transparent; border: 2px solid var(--border-color); color: var(--text-muted); }
         .btn-danger { background-color: #ef4444; }
 
         .protocol-note { font-size: 0.8rem; color: var(--text-muted); background: #0f172a; padding: 10px; border-radius: 6px; margin-bottom: 12px; border-left: 3px solid var(--accent-blue); }
@@ -70,7 +72,7 @@
 </head>
 <body>
 
-    <div class="header-title">AUDITORÍA TÉCNICA DE MENAJE</div>
+    <div class="header-title">AUDITORÍA TÉCNICA DE MENAJE v7.0</div>
 
     <!-- 1. IDENTIFICACIÓN DE LA PIEZA -->
     <div class="card">
@@ -93,14 +95,14 @@
             </div>
             <div class="form-group">
                 <label>Peso (gramos)</label>
-                <input type="number" id="peso" placeholder="Ej. 850" step="5" oninput="guardarEstado()">
+                <input type="number" id="peso" placeholder="Ej. 850" step="5" oninput="calcularMetrologia()">
             </div>
         </div>
 
         <div class="grid-3">
             <div class="form-group">
                 <label style="color:#38bdf8;">Largo Total (cm)</label>
-                <input type="number" id="largoTotal" placeholder="Ej. 48.5" step="0.1" oninput="guardarEstado()">
+                <input type="number" id="largoTotal" placeholder="Ej. 48.5" step="0.1" oninput="calcularMetrologia()">
             </div>
             <div class="form-group">
                 <label style="color:#38bdf8;">Altura Pared / Útil (cm)</label>
@@ -108,7 +110,7 @@
             </div>
             <div class="form-group">
                 <label style="color:#38bdf8;">Largo Mango/Asa (cm)</label>
-                <input type="number" id="largoMango" placeholder="Ej. 19.5" step="0.1" oninput="guardarEstado()">
+                <input type="number" id="largoMango" placeholder="Ej. 19.5" step="0.1" oninput="calcularMetrologia()">
             </div>
         </div>
 
@@ -244,9 +246,63 @@
         </div>
     </div>
 
-    <!-- 3. MONTAJE Y ERGONOMÍA -->
+    <!-- 3. PLANITUD DE BASE Y TOLERANCIA TÉRMICA -->
     <div class="card">
-        <h2>3. Montaje y Ergonomía</h2>
+        <h2>3. Planitud de Base y Concavidad</h2>
+        <div class="protocol-note">
+            <strong>Normativa Din:</strong> La concavidad térmica preventiva en frío evita que la sartén baila en caliente.
+        </div>
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Estado en Frío (Galgas mm)</label>
+                <input type="number" id="galgaFrio" step="0.05" placeholder="Ej: 0.30" oninput="calcularMetrologia()">
+            </div>
+            <div class="form-group">
+                <label>Perfil de Deformación</label>
+                <select id="tipoConcavidad" onchange="calcularMetrologia()">
+                    <option value="Concavidad Correcta">Concavidad Correcta (Centro Hacia Adentro)</option>
+                    <option value="Plana Absoluta">Plana Absoluta (0.0 mm)</option>
+                    <option value="Convexidad (Abombada)">Convexidad / Abombada (Bailarina)</option>
+                </select>
+            </div>
+        </div>
+        <div class="metric-display">
+            <label>Diagnóstico de Estabilidad en Cristal</label>
+            <div id="badge-planitud" class="status-badge">Sin Medición</div>
+        </div>
+    </div>
+
+    <!-- 4. FONDO MAGNÉTICO E INDUCCIÓN -->
+    <div class="card">
+        <h2>4. Fondo Magnético y Eficiencia de Inducción</h2>
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Tipo de Disco Ferromagnético</label>
+                <select id="tipoDiscoFondo" onchange="calcularMetrologia()">
+                    <option value="Full Induction">Full Induction (Disco Punteado/Troquelado)</option>
+                    <option value="Full Metal 100%">Full Metal / Solera Lisa 100% Inox</option>
+                    <option value="Disco Punteado Standard">Disco Estándar Punteado</option>
+                    <option value="Sin Disco (Solo Gas/Vitro)">Sin Disco (Incompatible Inducción)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Atracción Magnetómetro / Imán</label>
+                <select id="fuerzaMagnetica" onchange="calcularMetrologia()">
+                    <option value="Alta">Atracción Alta (N52 / Fuerte)</option>
+                    <option value="Media">Atracción Media</option>
+                    <option value="Baja">Atracción Baja (Riesgo en Placas Pequeñas)</option>
+                </select>
+            </div>
+        </div>
+        <div class="metric-display">
+            <label>Respuesta Estimada en Inducción</label>
+            <div id="badge-induccion-efectiva" class="status-badge">Sin Evaluar</div>
+        </div>
+    </div>
+
+    <!-- 5. MONTAJE, BALANCE Y ERGONOMÍA -->
+    <div class="card">
+        <h2>5. Montaje, Balance y Ergonomía</h2>
         
         <div class="form-group">
             <label>Fijación del Mango/Asas</label>
@@ -268,6 +324,24 @@
             </div>
         </div>
 
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Centro de Gravedad / Balance</label>
+                <select id="balanceMango" onchange="calcularMetrologia()">
+                    <option value="Equilibrado">Equilibrado (Apoya plana en vacío)</option>
+                    <option value="Cabezona">Cabezona (Cae hacia el cuerpo)</option>
+                    <option value="Vuelca Mango">Vuelca hacia el mango en vacío (Peligro)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Control de Vertido</label>
+                <div class="btn-grid" id="group-vertido">
+                    <button class="btn-opt green" onclick="setOpt('vertido', 'Antigoteo', this)">Borde Antigoteo</button>
+                    <button class="btn-opt yellow" onclick="setOpt('vertido', 'Borde Recto', this)">Borde Recto</button>
+                </div>
+            </div>
+        </div>
+
         <div class="form-group">
             <label>Térmica del Mango</label>
             <div class="btn-grid" id="group-termica">
@@ -275,21 +349,13 @@
                 <button class="btn-opt red" onclick="setOpt('termica', 'Quema', this)">Quema (Peligro)</button>
             </div>
         </div>
-
-        <div class="form-group">
-            <label>Control de Vertido</label>
-            <div class="btn-grid" id="group-vertido">
-                <button class="btn-opt green" onclick="setOpt('vertido', 'Antigoteo', this)">Borde Antigoteo</button>
-                <button class="btn-opt yellow" onclick="setOpt('vertido', 'Borde Recto', this)">Borde Recto</button>
-            </div>
-        </div>
     </div>
 
-    <!-- 4. ENSAYOS TÉRMICOS -->
+    <!-- 6. ENSAYOS TÉRMICOS Y BOIL TEST -->
     <div class="card">
-        <h2>4. Ensayo Térmico en Seco (Pirómetro)</h2>
+        <h2>6. Ensayo Térmico y Boil Test (Agua)</h2>
         <div class="protocol-note">
-            <strong>Protocolo en Seco:</strong> Pieza limpia y seca. Calentar hasta 180 °C en el centro antes de apagar el fuego.
+            <strong>Protocolo en Seco & Agua:</strong> Medir reparto de calor a 180°C y patrón de burbujas en ebullición.
         </div>
         
         <div class="form-group">
@@ -319,6 +385,15 @@
             </div>
         </div>
 
+        <div class="form-group" style="margin-top:8px;">
+            <label style="color:#38bdf8;">Boil Test (Patrón de Burbujas)</label>
+            <select id="boilTestPatron" onchange="calcularMetrologia()">
+                <option value="Homogéneo">Ebullición Homogénea (Burbujas uniformes en todo el fondo)</option>
+                <option value="Anillo Central">Ebullición Concentrada en Anillo Central</option>
+                <option value="Puntos Calientes">Puntos Calientes Asimétricos (Zonas sin ebullición)</option>
+            </select>
+        </div>
+
         <div class="metric-display">
             <label>Diagnóstico Térmico (Gradiente ΔT y Retención)</label>
             <div id="resultado-delta" class="thickness-value">ΔT: -- °C</div>
@@ -327,9 +402,9 @@
         </div>
     </div>
 
-    <!-- 5. EVALUACIÓN FINAL DE CALIDAD -->
+    <!-- 7. EVALUACIÓN FINAL DE CALIDAD -->
     <div class="card" style="border: 2px solid var(--accent-blue);">
-        <h2>5. Evaluación Final de Calidad</h2>
+        <h2>7. Evaluación Final de Calidad</h2>
         <div class="metric-display">
             <label>Calificación Global Calculada</label>
             <div id="puntuacion-global" class="summary-score">-- / 100</div>
@@ -351,9 +426,9 @@
         </div>
     </div>
 
-    <!-- 6. FICHA TÉCNICA RESUMEN -->
+    <!-- 8. FICHA TÉCNICA RESUMEN -->
     <div class="card">
-        <h2>Ficha Técnica Resumen</h2>
+        <h2>8. Ficha Técnica Resumen</h2>
         <div class="table-container">
             <table>
                 <thead>
@@ -369,654 +444,459 @@
         </div>
     </div>
 
-    <!-- 7. OBSERVACIONES Y EXPORTACIÓN -->
+    <!-- 9. OBSERVACIONES Y EXPORTACIÓN -->
     <div class="card">
-        <h2>7. Observaciones Finales y Exportación</h2>
+        <h2>9. Observaciones Finales y Exportación</h2>
         <div class="form-group">
             <textarea id="notasAnalisis" rows="3" placeholder="Comentarios del directo, calidad del antiadherente, ergonomía..." oninput="guardarEstado()"></textarea>
         </div>
-
-        <button class="btn-main" onclick="guardarFicha()">Guardar en Comparador</button>
-        <button class="btn-main btn-excel" onclick="exportarCSV()">Exportar Auditoría Actual a Excel (.CSV)</button>
-        <button class="btn-main btn-danger" style="margin-top: 10px;" onclick="limpiarFormulario()">Limpiar Formulario Actual</button>
+        <button class="btn-main btn-excel" onclick="exportarExcel()">📊 Exportar Ficha a Excel (.xlsx)</button>
+        <button class="btn-main" onclick="exportarTexto()" style="margin-top:8px;">Copiar Informe de Texto</button>
+        <button class="btn-main btn-secondary" onclick="guardarEstado()">Guardar Datos Localmente</button>
+        <button class="btn-main btn-danger" onclick="limpiarFormulario()">Limpiar / Reiniciar Ficha</button>
     </div>
 
-    <!-- COMPARADOR DE PIEZAS -->
-    <div class="card">
-        <h2>Comparador (Máx. 3)</h2>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Pieza</th>
-                        <th>Medidas</th>
-                        <th>Fondo</th>
-                        <th>Evaluación</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-comparador">
-                    <tr><td colspan="4" style="color: var(--text-muted); text-align:center;">Sin datos guardados</td></tr>
-                </tbody>
-            </table>
-        </div>
-        <button class="btn-main btn-secondary" style="margin-top: 10px; padding: 8px; font-size: 0.8rem;" onclick="limpiarComparador()">Limpiar Comparador</button>
-    </div>
-
+    <!-- LÓGICA JAVASCRIPT COMPLETA Y UNIFICADA -->
     <script>
-        let selecciones = { fijacion: '', materialMango: '', termica: '', vertido: '' };
-        let datosGuardados = [];
-        let fondoCalc = 0;
-        let estadoFondo = { texto: "Sin datos", color: "var(--border-color)" };
-        let estadoPared = { texto: "Sin datos", color: "var(--border-color)", comentario: "-" };
-        let evaluacionGlobal = { nota: 0, categoria: "Sin Datos", color: "var(--border-color)" };
-        let capTeoricaVal = 0;
-        let nombreGeometriaAuto = "Desconocida";
+        const estadoOptions = { fijacion: '', materialMango: '', termica: '', vertido: '' };
 
-        window.onload = function() { cargarEstado(); };
-
-        function parseInputNumber(id) {
-            const el = document.getElementById(id);
-            if (!el) return 0;
-            const val = el.value.replace(',', '.');
-            return parseFloat(val) || 0;
+        function setOpt(grupo, valor, elemento) {
+            estadoOptions[grupo] = valor;
+            const contenedor = elemento.parentElement;
+            contenedor.querySelectorAll('.btn-opt').forEach(btn => btn.classList.remove('active'));
+            elemento.classList.add('active');
+            calcularMetrologia();
         }
 
-        function setOpt(grupo, valor, btn) {
-            selecciones[grupo] = valor;
-            const parent = btn.parentElement;
-            parent.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            calcularMetrologia();
+        function getValNum(id) {
+            const v = parseFloat(document.getElementById(id)?.value);
+            return isNaN(v) ? 0 : v;
+        }
+
+        function getValTxt(id) {
+            return document.getElementById(id)?.value || '';
         }
 
         function calcularMetrologia() {
-            // A. Espesor de Fondo
-            const mint = parseInputNumber('mint');
-            const mext = parseInputNumber('mext');
-            const displayFondo = document.getElementById('resultado-fondo');
+            // A. Fondo Difusor
+            const mint = getValNum('mint');
+            const mext = getValNum('mext');
+            const grosorFondo = (mext > mint && mint > 0) ? (mext - mint) : 0;
+            const resFondo = document.getElementById('resultado-fondo');
             const badgeFondo = document.getElementById('badge-fondo');
 
-            if (mext > 0 && mint > 0 && mext >= mint) {
-                fondoCalc = (mext - mint).toFixed(1);
-                displayFondo.innerText = `${fondoCalc} mm`;
-
-                if (fondoCalc < 2.5) {
-                    estadoFondo = { texto: "Gama Baja / Prensado", color: "var(--status-red)" };
-                } else if (fondoCalc <= 3.8) {
-                    estadoFondo = { texto: "Gama Media / Aceptable", color: "var(--status-yellow)" };
-                } else {
-                    estadoFondo = { texto: "Gama Alta / Gran Retención", color: "var(--status-green)" };
-                }
-                badgeFondo.innerText = estadoFondo.texto;
-                badgeFondo.style.backgroundColor = estadoFondo.color;
+            resFondo.innerText = grosorFondo.toFixed(1) + ' mm';
+            if (grosorFondo === 0) {
+                badgeFondo.innerText = 'Sin Medición';
+                badgeFondo.style.backgroundColor = 'var(--border-color)';
+            } else if (grosorFondo >= 5.0) {
+                badgeFondo.innerText = 'Excelente Fondo Difusor (Alta Retención)';
+                badgeFondo.style.backgroundColor = 'var(--status-green)';
+            } else if (grosorFondo >= 3.0) {
+                badgeFondo.innerText = 'Fondo Aceptable / Estándar';
+                badgeFondo.style.backgroundColor = 'var(--status-yellow)';
             } else {
-                fondoCalc = 0;
-                displayFondo.innerText = "0.0 mm";
-                badgeFondo.innerText = "Sin Medición";
-                badgeFondo.style.backgroundColor = "var(--border-color)";
+                badgeFondo.innerText = 'Fondo Fino (Riesgo Deformación)';
+                badgeFondo.style.backgroundColor = 'var(--status-red)';
             }
 
             // B. Pared y Borde
-            const paredVal = parseInputNumber('grosor-pared');
-            const espesorLabioVal = parseInputNumber('espesor-labio');
-            const vueloLabioVal = parseInputNumber('vuelo-labio');
-            const tipoBorde = document.getElementById('tipo-borde').value;
+            const gPared = getValNum('grosor-pared');
+            const tipoBorde = getValTxt('tipo-borde');
+            const eLabio = getValNum('espesor-labio');
+            const vLabio = getValNum('vuelo-labio');
 
-            const displayPared = document.getElementById('resultado-pared');
+            const resPared = document.getElementById('resultado-pared');
             const badgePared = document.getElementById('badge-pared');
-            const txtComentario = document.getElementById('comentario-borde');
+            const comBorde = document.getElementById('comentario-borde');
 
-            dibujarEsquemaBorde(tipoBorde);
-
-            if (paredVal > 0) {
-                displayPared.innerText = `${paredVal.toFixed(2)} mm`;
-                let txtVuelo = vueloLabioVal > 0 ? ` (Vuelo: ${vueloLabioVal.toFixed(1)} mm)` : '';
-
-                if (tipoBorde === 'redondeado') {
-                    let detalleRefuerzo = (espesorLabioVal > paredVal) ? ` Reforzado (+${(espesorLabioVal - paredVal).toFixed(2)} mm).` : '.';
-                    estadoPared = { 
-                        texto: "Borde Redondeado / Vuelto", 
-                        color: "var(--status-green)",
-                        comentario: `Pared de ${paredVal.toFixed(2)} mm con labio de ${espesorLabioVal || paredVal} mm${txtVuelo}.${detalleRefuerzo} Antigoteo.`
-                    };
-                } else if (tipoBorde === 'macizo') {
-                    let refVal = espesorLabioVal || vueloLabioVal;
-                    estadoPared = { 
-                        texto: "Borde Macizo Reforzado", 
-                        color: "var(--status-green)",
-                        comentario: `Anillo superior de ${refVal ? refVal.toFixed(1) : paredVal.toFixed(1)} mm: Alta resistencia a deformación e impactos.`
-                    };
-                } else if (tipoBorde === 'pestana') {
-                    estadoPared = { 
-                        texto: "Pestaña Horizontal 90°", 
-                        color: "var(--status-green)",
-                        comentario: `Pestaña doblada${txtVuelo}: Asiento firme para tapas y vertido limpio.`
-                    };
-                } else {
-                    estadoPared = { 
-                        texto: paredVal < 1.0 ? "Borde Recto Delgado" : "Borde Recto Estándar", 
-                        color: paredVal < 1.0 ? "var(--status-red)" : "var(--status-yellow)",
-                        comentario: paredVal < 1.0 ? "Sin refuerzo superior. Propenso a abolladuras." : "Corte recto continuo sin perfilado."
-                    };
-                }
-
-                badgePared.innerText = estadoPared.texto;
-                badgePared.style.backgroundColor = estadoPared.color;
-                txtComentario.innerText = estadoPared.comentario;
+            resPared.innerText = gPared.toFixed(2) + ' mm';
+            if (gPared === 0) {
+                badgePared.innerText = 'Sin Medición';
+                badgePared.style.backgroundColor = 'var(--border-color)';
+                comBorde.innerText = '-';
+            } else if (gPared >= 3.0) {
+                badgePared.innerText = 'Pared Estructural Robusta';
+                badgePared.style.backgroundColor = 'var(--status-green)';
+                comBorde.innerText = 'Estructura rígida de gran durabilidad.';
+            } else if (gPared >= 1.8) {
+                badgePared.innerText = 'Pared Equilibrada';
+                badgePared.style.backgroundColor = 'var(--status-yellow)';
+                comBorde.innerText = 'Buen balance peso-resistencia.';
             } else {
-                displayPared.innerText = "0.0 mm";
-                badgePared.innerText = "Sin Medición";
-                badgePared.style.backgroundColor = "var(--border-color)";
-                txtComentario.innerText = "-";
+                badgePared.innerText = 'Pared Delgada';
+                badgePared.style.backgroundColor = 'var(--status-red)';
+                comBorde.innerText = 'Ligera pero susceptible a golpes o choques térmicos.';
             }
 
-            // C. Geometría y Cálculo de Capacidad Teórica
-            const diamNom = parseInputNumber('diametro');
-            const diamBase = parseInputNumber('diametroBaseReal');
-            const diamInd = parseInputNumber('diametroInduccion');
-            const hPared = parseInputNumber('alturaTotal');
-            const tipoPiezaSel = document.getElementById('tipo').value;
+            dibujarSVGBorde(tipoBorde, gPared, eLabio, vLabio);
 
-            const inputPctUtil = document.getElementById('pctUtil');
-            const inputPctInd = document.getElementById('pctInduccion');
-            const badgeGeo = document.getElementById('badge-geometria');
-            const inputCapTeorica = document.getElementById('capTeorica');
+            // C. Planitud
+            const galga = getValNum('galgaFrio');
+            const tipoConc = getValTxt('tipoConcavidad');
+            const badgePlanitud = document.getElementById('badge-planitud');
 
-            if (diamNom > 0 && diamBase > 0) {
-                let pctUVal = (diamBase / diamNom) * 100;
-                inputPctUtil.value = `${pctUVal.toFixed(1)}%`;
-
-                // Clasificación automática de forma
-                if (tipoPiezaSel === 'Wok') {
-                    nombreGeometriaAuto = "Perfil Parabólico (Wok)";
-                    badgeGeo.style.color = "#38bdf8";
-                } else if (pctUVal >= 92) {
-                    nombreGeometriaAuto = `${tipoPiezaSel} de Paredes Rectas (Cilíndrica)`;
-                    badgeGeo.style.color = "#10b981";
-                } else if (pctUVal >= 78) {
-                    nombreGeometriaAuto = `${tipoPiezaSel} Troncocónica Estándar`;
-                    badgeGeo.style.color = "#38bdf8";
-                } else {
-                    nombreGeometriaAuto = `${tipoPiezaSel} Troncocónica Pronunciada`;
-                    badgeGeo.style.color = "#f59e0b";
-                }
-                badgeGeo.innerText = nombreGeometriaAuto;
+            if (tipoConc === 'Convexidad (Abombada)') {
+                badgePlanitud.innerText = 'Riesgo Alto: Base Convexo/Abombada (Baila en la placa)';
+                badgePlanitud.style.backgroundColor = 'var(--status-red)';
+            } else if (galga > 0.8) {
+                badgePlanitud.innerText = 'Concavidad Excesiva (>0.8 mm)';
+                badgePlanitud.style.backgroundColor = 'var(--status-yellow)';
             } else {
-                inputPctUtil.value = "-%";
-                badgeGeo.innerText = "Introduce diámetros para clasificar forma";
-                badgeGeo.style.color = "#94a3b8";
+                badgePlanitud.innerText = 'Planitud Correcta para Dilatación';
+                badgePlanitud.style.backgroundColor = 'var(--status-green)';
             }
 
-            // Cobertura Inducción
-            if (diamBase > 0 && diamInd > 0) {
-                let pctIVal = (diamInd / diamBase) * 100;
-                inputPctInd.value = `${pctIVal.toFixed(1)}%`;
+            // D. Inducción
+            const disco = getValTxt('tipoDiscoFondo');
+            const atraccion = getValTxt('fuerzaMagnetica');
+            const badgeInd = document.getElementById('badge-induccion-efectiva');
+
+            if (disco === 'Full Metal 100%' || (disco === 'Full Induction' && atraccion === 'Alta')) {
+                badgeInd.innerText = 'Máxima Eficiencia en Inducción';
+                badgeInd.style.backgroundColor = 'var(--status-green)';
+            } else if (disco === 'Sin Disco (Solo Gas/Vitro)') {
+                badgeInd.innerText = 'Incompatible con Inducción';
+                badgeInd.style.backgroundColor = 'var(--status-red)';
             } else {
-                inputPctInd.value = "-%";
+                badgeInd.innerText = 'Inducción Estándar';
+                badgeInd.style.backgroundColor = 'var(--status-yellow)';
             }
 
-            // Capacidad teórica (Litros) por fórmula
-            if (diamNom > 0 && hPared > 0) {
-                let r1 = diamNom / 2;
-                let r2 = (diamBase > 0 ? diamBase : diamNom) / 2;
+            // E. Geometría y Capacidad
+            const dSup = getValNum('diametro');
+            const dBase = getValNum('diametroBaseReal');
+            const dInd = getValNum('diametroInduccion');
+            const hPared = getValNum('alturaTotal');
 
-                if (tipoPiezaSel === 'Wok') {
-                    capTeoricaVal = (Math.PI * hPared * (3 * Math.pow(r1, 2) + Math.pow(hPared, 2))) / 6 / 1000;
-                } else if (r1 === r2 || Math.abs(r1 - r2) < 0.5) {
-                    capTeoricaVal = (Math.PI * Math.pow(r1, 2) * hPared) / 1000;
-                } else {
-                    capTeoricaVal = ((Math.PI * hPared) / 3) * (Math.pow(r1, 2) + (r1 * r2) + Math.pow(r2, 2)) / 1000;
-                }
-                inputCapTeorica.value = `${capTeoricaVal.toFixed(2)} L`;
+            let capTeo = 0;
+            if (dSup > 0 && dBase > 0 && hPared > 0) {
+                const r1 = dSup / 2;
+                const r2 = dBase / 2;
+                capTeo = (1/3) * Math.PI * hPared * (r1*r1 + r2*r2 + r1*r2) / 1000;
+                document.getElementById('capTeorica').value = capTeo.toFixed(2) + ' L';
             } else {
-                capTeoricaVal = 0;
-                inputCapTeorica.value = "- L";
+                document.getElementById('capTeorica').value = '- L';
             }
 
-            actualizarDiagramaSVG(tipoPiezaSel, diamNom, diamBase, diamInd, hPared);
+            const pctUtil = (dSup > 0 && dBase > 0) ? ((dBase / dSup) * 100) : 0;
+            const pctInd = (dBase > 0 && dInd > 0) ? ((dInd / dBase) * 100) : 0;
 
-            // D. Térmica
-            const tCentro = parseInputNumber('tempCentro');
-            const tBorde = parseInputNumber('tempBorde');
-            const t60s = parseInputNumber('temp60s');
-            const t180s = parseInputNumber('temp180s');
+            document.getElementById('pctUtil').value = pctUtil ? pctUtil.toFixed(1) + '%' : '-%';
+            document.getElementById('pctInduccion').value = pctInd ? pctInd.toFixed(1) + '%' : '-%';
 
-            const displayDelta = document.getElementById('resultado-delta');
+            dibujarSVGProporcion(dSup, dBase, dInd, hPared);
+
+            // F. Ensayos Térmicos
+            const tCentro = getValNum('tempCentro');
+            const tBorde = getValNum('tempBorde');
+            const t180 = getValNum('temp180s');
+
+            const resDelta = document.getElementById('resultado-delta');
             const badgeDelta = document.getElementById('badge-delta');
-            const txtComentarioTermico = document.getElementById('comentario-termico');
+            const comTermico = document.getElementById('comentario-termico');
 
+            let deltaT = 0;
             if (tCentro > 0 && tBorde > 0) {
-                let delta = Math.abs(tCentro - tBorde);
-                displayDelta.innerText = `ΔT: ${delta} °C`;
+                deltaT = Math.abs(tCentro - tBorde);
+                resDelta.innerText = 'ΔT: ' + deltaT.toFixed(1) + ' °C';
 
-                let txtEvalTermica = "";
-                if (delta <= 15) {
-                    badgeDelta.innerText = "Difusión Excelente";
-                    badgeDelta.style.backgroundColor = "var(--status-green)";
-                    txtEvalTermica = "Excelente reparto de calor.";
-                } else if (delta <= 28) {
-                    badgeDelta.innerText = "Difusión Buena";
-                    badgeDelta.style.backgroundColor = "var(--status-yellow)";
-                    txtEvalTermica = "Reparto aceptable de calor.";
+                if (deltaT <= 15) {
+                    badgeDelta.innerText = 'Reparto Térmico Homogéneo';
+                    badgeDelta.style.backgroundColor = 'var(--status-green)';
+                    comTermico.innerText = 'Excelente distribución de calor sin puntos calientes.';
+                } else if (deltaT <= 30) {
+                    badgeDelta.innerText = 'Reparto Térmico Aceptable';
+                    badgeDelta.style.backgroundColor = 'var(--status-yellow)';
+                    comTermico.innerText = 'Gradiente moderado entre centro y bordes.';
                 } else {
-                    badgeDelta.innerText = "Punto Caliente Central";
-                    badgeDelta.style.backgroundColor = "var(--status-red)";
-                    txtEvalTermica = "Riesgo de quemado central.";
+                    badgeDelta.innerText = 'Alto Gradiente Térmico';
+                    badgeDelta.style.backgroundColor = 'var(--status-red)';
+                    comTermico.innerText = 'Riesgo de sobrecocción central o comida pegada.';
                 }
-
-                if (t180s > 0) {
-                    let pctRetencion = (t180s / tCentro) * 100;
-                    txtEvalTermica += ` Retención a 3 min: ${t180s}°C (${pctRetencion.toFixed(0)}%).`;
-                } else if (t60s > 0) {
-                    txtEvalTermica += ` Caída a 60s: ${t60s}°C.`;
-                }
-
-                txtComentarioTermico.innerText = txtEvalTermica;
             } else {
-                displayDelta.innerText = "ΔT: -- °C";
-                badgeDelta.innerText = "Sin Datos Térmicos";
-                badgeDelta.style.backgroundColor = "var(--border-color)";
-                txtComentarioTermico.innerText = "-";
+                resDelta.innerText = 'ΔT: -- °C';
+                badgeDelta.innerText = 'Sin Datos Térmicos';
+                badgeDelta.style.backgroundColor = 'var(--border-color)';
+                comTermico.innerText = '-';
             }
 
-            generarEvaluacionFinal();
-            generarFichaResumen();
+            // G. Evaluación Final de Calidad
+            evaluarCalidadGlobal(grosorFondo, gPared, deltaT, pctInd, t180);
+            actualizarTablaResumen(grosorFondo, gPared, capTeo, pctUtil, pctInd, deltaT);
             guardarEstado();
         }
 
-        function generarEvaluacionFinal() {
-            let nota = 50;
-            let pros = [];
-            let contras = [];
+        function dibujarSVGBorde(tipo, gPared, eLabio, vLabio) {
+            const svg = document.getElementById('svg-borde-perfil');
+            svg.innerHTML = '';
 
-            if (fondoCalc >= 4.0) {
-                nota += 20;
-                pros.push(`Excelente espesor de fondo (${fondoCalc} mm), alta retención de calor.`);
-            } else if (fondoCalc >= 2.8) {
-                nota += 10;
-                pros.push(`Fondo adecuado (${fondoCalc} mm) para uso doméstico.`);
-            } else if (fondoCalc > 0) {
-                nota -= 15;
-                contras.push(`Fondo muy delgado (${fondoCalc} mm), riesgo de deformación o sobrecalentamiento.`);
+            let path = '';
+            if (tipo === 'redondeado') {
+                path = `<path d="M 120 80 L 120 40 Q 120 20 140 20 Q 160 20 160 35 L 145 35 Q 145 30 135 30 L 135 80 Z" fill="#38bdf8"/>`;
+            } else if (tipo === 'pestana') {
+                path = `<path d="M 120 80 L 120 30 L 165 30 L 165 42 L 135 42 L 135 80 Z" fill="#38bdf8"/>`;
+            } else if (tipo === 'macizo') {
+                path = `<path d="M 120 80 L 120 45 Q 110 25 140 20 Q 170 25 150 45 L 135 50 L 135 80 Z" fill="#38bdf8"/>`;
+            } else {
+                path = `<path d="M 130 80 L 130 25 L 145 25 L 145 80 Z" fill="#38bdf8"/>`;
             }
 
-            const diamBase = parseInputNumber('diametroBaseReal');
-            const diamInd = parseInputNumber('diametroInduccion');
-            if (diamBase > 0 && diamInd > 0) {
-                let pctInd = (diamInd / diamBase) * 100;
-                if (pctInd >= 85) {
-                    nota += 15;
-                    pros.push(`Excelente cobertura de inducción (${pctInd.toFixed(1)}%), máximo rendimiento.`);
-                } else if (pctInd < 70) {
-                    nota -= 15;
-                    contras.push(`Disco de inducción reducido (${pctInd.toFixed(1)}% de base), pérdida de eficiencia.`);
-                }
-            }
+            svg.innerHTML = `<line x1="20" y1="80" x2="280" y2="80" stroke="#334155" stroke-width="2"/>` + path;
+        }
 
-            const tCentro = parseInputNumber('tempCentro');
-            const tBorde = parseInputNumber('tempBorde');
-            if (tCentro > 0 && tBorde > 0) {
-                let delta = Math.abs(tCentro - tBorde);
-                if (delta <= 15) {
-                    nota += 15;
-                    pros.push(`Reparto de calor muy homogéneo (ΔT de solo ${delta} °C).`);
-                } else if (delta > 30) {
-                    nota -= 15;
-                    contras.push(`Elevado gradiente térmico (ΔT de ${delta} °C), zonas frías en el borde.`);
-                }
-            }
+        function dibujarSVGProporcion(dSup, dBase, dInd, hPared) {
+            const svg = document.getElementById('svg-diagram');
+            const badgeGeo = document.getElementById('badge-geometria');
+            svg.innerHTML = '';
 
-            const tipoBorde = document.getElementById('tipo-borde').value;
-            if (tipoBorde === 'redondeado' || tipoBorde === 'macizo') {
-                nota += 10;
-                pros.push("Estructura de borde reforzada contra golpes y choques térmicos.");
-            } else if (tipoBorde === 'recto' && parseInputNumber('grosor-pared') < 1.0) {
-                nota -= 10;
-                contras.push("Borde recto delgado sin refuerzo, susceptible a abolladuras.");
-            }
-
-            if (selecciones.termica === 'Aislado (Frío)') {
-                nota += 5;
-                pros.push("Mango con aislamiento térmico para manipulación segura.");
-            } else if (selecciones.termica === 'Quema') {
-                nota -= 10;
-                contras.push("El mango se calienta en exceso; requiere protección.");
-            }
-
-            if (selecciones.vertido === 'Antigoteo') {
-                nota += 5;
-                pros.push("Diseño de borde limpio que evita goteos al verter.");
-            }
-
-            nota = Math.min(100, Math.max(0, nota));
-
-            let categoria = "Gama Baja / Económica";
-            let color = "var(--status-red)";
-
-            if (nota >= 80) {
-                categoria = "Gama Alta / Calidad Profesional";
-                color = "var(--status-green)";
-            } else if (nota >= 60) {
-                categoria = "Gama Media / Uso Doméstico Equilibrado";
-                color = "var(--status-yellow)";
-            }
-
-            evaluacionGlobal = { nota, categoria, color };
-
-            const elemScore = document.getElementById('puntuacion-global');
-            const elemBadge = document.getElementById('badge-evaluacion-final');
-            const elemPros = document.getElementById('lista-pros');
-            const elemContras = document.getElementById('lista-contras');
-
-            if (fondoCalc === 0 && parseInputNumber('grosor-pared') === 0) {
-                elemScore.innerText = "-- / 100";
-                elemBadge.innerText = "Sin Datos Suficientes";
-                elemBadge.style.backgroundColor = "var(--border-color)";
-                elemPros.innerHTML = "<li>Introduce datos de mediciones para calcular fortalezas.</li>";
-                elemContras.innerHTML = "<li>Introduce datos de mediciones para detectar puntos débiles.</li>";
+            if (dSup <= 0 || dBase <= 0) {
+                badgeGeo.innerText = 'Introduce medidas de diámetro';
                 return;
             }
 
-            elemScore.innerText = `${nota} / 100`;
-            elemScore.style.color = color;
-            elemBadge.innerText = categoria;
-            elemBadge.style.backgroundColor = color;
+            let forma = "Paredes Rectas";
+            if (dSup > dBase + 4) forma = "Troncocónica (Pared Inclinada)";
+            else if (dSup < dBase) forma = "Cónica Invertida";
+            badgeGeo.innerText = forma;
 
-            elemPros.innerHTML = pros.length > 0 ? pros.map(p => `<li>${p}</li>`).join('') : "<li>Sin fortalezas destacadas registradas.</li>";
-            elemContras.innerHTML = contras.length > 0 ? contras.map(c => `<li>${c}</li>`).join('') : "<li>Sin puntos críticos graves detectados.</li>";
-        }
+            const scale = 200 / Math.max(dSup, dBase, 30);
+            const wSup = dSup * scale;
+            const wBase = dBase * scale;
+            const wInd = (dInd > 0 ? dInd : dBase) * scale;
 
-        function generarFichaResumen() {
-            const capRealVal = parseInputNumber('capReal');
-            const capFinalDisplay = capRealVal > 0 ? `${capRealVal.toFixed(2)} L (Medida Real)` : (capTeoricaVal > 0 ? `${capTeoricaVal.toFixed(2)} L (Teórica Fórmula)` : '-');
-            const tCentro = parseInputNumber('tempCentro');
-            const tBorde = parseInputNumber('tempBorde');
-            const deltaT = (tCentro > 0 && tBorde > 0) ? `${Math.abs(tCentro - tBorde)} °C` : '-';
+            const xCenter = 150;
+            const x1 = xCenter - (wSup / 2);
+            const x2 = xCenter + (wSup / 2);
+            const x3 = xCenter + (wBase / 2);
+            const x4 = xCenter - (wBase / 2);
 
-            const html = `
-                <tr><td><strong>Identificación</strong></td><td>${document.getElementById('marca').value || 'S/M'} ${document.getElementById('modelo').value || ''} (${document.getElementById('tipo').value})</td></tr>
-                <tr><td><strong>Material / Construcción</strong></td><td>${document.getElementById('material').value}</td></tr>
-                <tr><td><strong>Dimensiones Geométricas</strong></td><td>Ø Sup: ${parseInputNumber('diametro')} cm | Base Útil: ${parseInputNumber('diametroBaseReal')} cm | Pared: ${parseInputNumber('alturaTotal')} cm</td></tr>
-                <tr><td><strong>Clasificación Geométrico-Estructural</strong></td><td>${nombreGeometriaAuto}</td></tr>
-                <tr><td><strong>Volumen / Capacidad</strong></td><td>${capFinalDisplay}</td></tr>
-                <tr><td><strong>Espesores de Metal</strong></td><td>Fondo: ${fondoCalc} mm | Pared: ${parseInputNumber('grosor-pared').toFixed(2)} mm</td></tr>
-                <tr><td><strong>Cobertura Inducción</strong></td><td>Disco: ${parseInputNumber('diametroInduccion')} cm (${document.getElementById('pctInduccion').value})</td></tr>
-                <tr><td><strong>Rendimiento Térmico</strong></td><td>ΔT: ${deltaT} | Retención 3 min: ${parseInputNumber('temp180s') || '-'} °C</td></tr>
-                <tr><td><strong>Ergonomía y Montaje</strong></td><td>Fijación: ${selecciones.fijacion || '-'} | Material Mango: ${selecciones.materialMango || '-'} | Térmica: ${selecciones.termica || '-'}</td></tr>
-            `;
-            document.getElementById('resumenTabla').innerHTML = html;
-        }
+            const yTop = 30;
+            const yBot = 100;
 
-        function dibujarEsquemaBorde(tipo) {
-            const svg = document.getElementById('svg-borde-perfil');
-            let html = '';
-
-            if (tipo === 'redondeado') {
-                html = `
-                    <path d="M 60,90 L 60,35 A 12,12 0 0,1 82,24 A 8,8 0 0,1 72,35 L 72,90 Z" fill="#38bdf8" stroke="#60a5fa" stroke-width="2"/>
-                    <text x="110" y="40" fill="#38bdf8" font-size="14" font-weight="bold">Borde Redondeado / Vuelto</text>
-                    <text x="110" y="60" fill="#94a3b8" font-size="12">Perfil curvado antigoteo</text>
-                `;
-            } else if (tipo === 'macizo') {
-                html = `
-                    <path d="M 70,90 L 70,40 C 70,25 45,25 45,15 C 45,6 90,6 90,15 C 90,25 80,25 80,40 L 80,90 Z" fill="#38bdf8" stroke="#60a5fa" stroke-width="2"/>
-                    <text x="115" y="40" fill="#38bdf8" font-size="14" font-weight="bold">Anillo Macizo / Recrecido</text>
-                    <text x="115" y="60" fill="#94a3b8" font-size="12">Refuerzo superior de fundición</text>
-                `;
-            } else if (tipo === 'pestana') {
-                html = `
-                    <path d="M 65,90 L 65,30 L 25,30 C 18,30 18,18 25,18 L 75,18 L 75,90 Z" fill="#10b981" stroke="#34d399" stroke-width="2"/>
-                    <text x="95" y="40" fill="#10b981" font-size="14" font-weight="bold">Pestaña Horizontal</text>
-                    <text x="95" y="60" fill="#94a3b8" font-size="12">Asiento plano para tapas</text>
-                `;
-            } else {
-                html = `
-                    <rect x="60" y="15" width="16" height="75" rx="2" fill="#f59e0b" stroke="#fbbf24" stroke-width="2"/>
-                    <text x="95" y="40" fill="#f59e0b" font-size="14" font-weight="bold">Borde Recto / Fino</text>
-                    <text x="95" y="60" fill="#94a3b8" font-size="12">Corte vertical sin perfilado</text>
-                `;
-            }
-            svg.innerHTML = html;
-        }
-
-        function actualizarDiagramaSVG(tipoSel, nom, base, ind, hPared) {
-            const svg = document.getElementById('svg-diagram');
-            let dNom = nom > 0 ? nom : 28;
-            let dBase = base > 0 ? base : (tipoSel === 'Sauté' || tipoSel === 'Olla' || tipoSel === 'Cazo' ? dNom : 22);
-            let dInd = ind > 0 ? ind : 18;
-
-            const cX = 150;
-            const baseY = 115;
-            
-            // Cálculo dinámico de altura del dibujo según hPared
-            let hPix = hPared > 0 ? Math.min(Math.max(hPared * 6, 25), 75) : (tipoSel === 'Olla' ? 65 : 35);
-            let topY = baseY - hPix;
-
-            const maxWidth = 220;
-            let wNom = maxWidth;
-            let wBase = (dBase / dNom) * maxWidth;
-            let wInd = (dInd / dNom) * maxWidth;
-
-            if (wBase > maxWidth) wBase = maxWidth;
-            if (wInd > wBase) wInd = wBase;
-
-            let x1Top = cX - (wNom / 2);
-            let x2Top = cX + (wNom / 2);
-            let x1Bot = cX - (wBase / 2);
-            let x2Bot = cX + (wBase / 2);
-            let x1Ind = cX - (wInd / 2);
-            let x2Ind = cX + (wInd / 2);
-
-            let pathD = "";
-            if (tipoSel === 'Wok') {
-                pathD = `M ${x1Top},${topY} Q ${cX},${baseY + 10} ${x2Top},${topY} L ${x2Bot},${baseY} L ${x1Bot},${baseY} Z`;
-            } else {
-                pathD = `M ${x1Top},${topY} L ${x1Bot},${baseY} L ${x2Bot},${baseY} L ${x2Top},${topY} Z`;
-            }
-
-            let pctUText = nom > 0 && base > 0 ? ((base / nom) * 100).toFixed(1) + '%' : '-';
-            let pctIText = base > 0 && ind > 0 ? ((ind / base) * 100).toFixed(1) + '%' : '-';
+            const xInd1 = xCenter - (wInd / 2);
+            const xInd2 = xCenter + (wInd / 2);
 
             svg.innerHTML = `
-                <polygon points="${x1Top},${topY} ${x1Bot},${baseY} ${x2Bot},${baseY} ${x2Top},${topY}" fill="rgba(56, 189, 248, 0.05)" stroke="#38bdf8" stroke-width="3"/>
-                <line x1="${x1Bot}" y1="${baseY}" x2="${x2Bot}" y2="${baseY}" stroke="#f59e0b" stroke-width="4"/>
-                <line x1="${x1Ind}" y1="${baseY + 7}" x2="${x2Ind}" y2="${baseY + 7}" stroke="#10b981" stroke-width="5"/>
-                <text x="${cX}" y="${topY - 6}" fill="#94a3b8" font-size="10" text-anchor="middle">Ø Sup: ${dNom} cm</text>
-                <text x="${cX}" y="${topY + (hPix / 2) + 4}" fill="#f59e0b" font-size="11" font-weight="bold" text-anchor="middle">Útil: ${pctUText}</text>
-                <text x="${cX}" y="${baseY + 23}" fill="#10b981" font-size="10" font-weight="bold" text-anchor="middle">Disco Ind: ${ind > 0 ? dInd + ' cm' : '-'} (${pctIText})</text>
+                <polygon points="${x1},${yTop} ${x2},${yTop} ${x3},${yBot} ${x4},${yBot}" fill="none" stroke="#38bdf8" stroke-width="3"/>
+                <line x1="${xInd1}" y1="${yBot+5}" x2="${xInd2}" y2="${yBot+5}" stroke="#10b981" stroke-width="5"/>
+                <text x="${xCenter}" y="${yTop - 10}" fill="#94a3b8" font-size="10" text-anchor="middle">Ø Sup: ${dSup} cm</text>
+                <text x="${xCenter}" y="${yBot + 25}" fill="#10b981" font-size="10" text-anchor="middle">Disco: ${dInd || dBase} cm</text>
             `;
         }
 
-        function guardarFicha() {
-            const marca = document.getElementById('marca').value || 'S/D';
-            const modelo = document.getElementById('modelo').value || 'S/D';
-            const diam = document.getElementById('diametro').value || '-';
-            const peso = document.getElementById('peso').value || '-';
+        function evaluarCalidadGlobal(fondo, pared, deltaT, pctInd, t180) {
+            let score = 50;
+            const pros = [];
+            const contras = [];
 
-            if (fondoCalc === 0 && parseInputNumber('grosor-pared') === 0) {
-                alert("Introduce al menos una medida antes de guardar.");
-                return;
+            if (fondo >= 4.5) { score += 10; pros.push("Excelente grosor de fondo difusor."); }
+            else if (fondo > 0 && fondo < 3.0) { score -= 10; contras.push("Fondo difusor fino (susceptible a alabeo)."); }
+
+            if (pared >= 2.5) { score += 10; pros.push("Cuerpo estructural robusto."); }
+            else if (pared > 0 && pared < 1.5) { score -= 10; contras.push("Paredes delgadas."); }
+
+            if (getValTxt('tipoConcavidad') === 'Convexidad (Abombada)') {
+                score -= 20; contras.push("Base abombada en frío (inestable en la placa).");
             }
 
-            if (datosGuardados.length >= 3) { datosGuardados.shift(); }
-
-            datosGuardados.push({
-                nombre: `${marca} ${modelo}`,
-                medidas: `Ø${diam}cm / ${peso}g`,
-                fondo: `${fondoCalc} mm`,
-                fondoColor: estadoFondo.color,
-                evaluacion: `${evaluacionGlobal.nota}/100 - ${evaluacionGlobal.categoria}`,
-                evaluacionColor: evaluacionGlobal.color
-            });
-
-            actualizarTabla();
-            guardarEstado();
-        }
-
-        function actualizarTabla() {
-            const tbody = document.getElementById('tabla-comparador');
-            if (datosGuardados.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="color: var(--text-muted); text-align:center;">Sin datos guardados</td></tr>';
-                return;
+            if (getValTxt('balanceMango') === 'Vuelca Mango') {
+                score -= 15; contras.push("Desequilibrio importante (el mango vence la sartén vacía).");
+            } else if (getValTxt('balanceMango') === 'Equilibrado') {
+                score += 5; pros.push("Excelente balance y estabilidad en mesa.");
             }
 
-            tbody.innerHTML = datosGuardados.map(item => `
-                <tr>
-                    <td><strong>${item.nombre}</strong></td>
-                    <td style="font-size: 0.75rem;">${item.medidas}</td>
-                    <td style="font-weight: bold; color: ${item.fondoColor};">${item.fondo}</td>
-                    <td style="font-weight: bold; color: ${item.evaluacionColor}; font-size:0.75rem;">${item.evaluacion}</td>
-                </tr>
-            `).join('');
+            if (getValTxt('boilTestPatron') === 'Homogéneo') {
+                score += 10; pros.push("Patrón de ebullición uniforme (Boil Test).");
+            } else if (getValTxt('boilTestPatron') === 'Puntos Calientes') {
+                score -= 10; contras.push("Puntos calientes en el patrón de ebullición.");
+            }
+
+            if (deltaT > 0 && deltaT <= 15) { score += 10; pros.push("Reparto térmico uniforme (ΔT reducido)."); }
+            else if (deltaT > 25) { score -= 10; contras.push("Elevado gradiente térmico."); }
+
+            if (pctInd >= 80) { score += 10; pros.push("Alta cobertura del disco de inducción."); }
+
+            if (estadoOptions.termica === 'Aislado (Frío)') { score += 5; pros.push("Mango aislado térmicamente."); }
+            else if (estadoOptions.termica === 'Quema') { score -= 15; contras.push("Mango excesivamente caliente."); }
+
+            score = Math.max(10, Math.min(100, score));
+
+            document.getElementById('puntuacion-global').innerText = score + ' / 100';
+            const badgeFinal = document.getElementById('badge-evaluacion-final');
+
+            if (score >= 80) {
+                badgeFinal.innerText = 'CALIDAD ALTA / RECOMENDADA';
+                badgeFinal.style.backgroundColor = 'var(--status-green)';
+            } else if (score >= 60) {
+                badgeFinal.innerText = 'CALIDAD MEDIA / ESTÁNDAR';
+                badgeFinal.style.backgroundColor = 'var(--status-yellow)';
+            } else {
+                badgeFinal.innerText = 'CALIDAD BAJA / NO RECOMENDADA';
+                badgeFinal.style.backgroundColor = 'var(--status-red)';
+            }
+
+            document.getElementById('lista-pros').innerHTML = pros.length ? pros.map(p => `<li>${p}</li>`).join('') : '<li>Introduce mediciones para calcular fortalezas.</li>';
+            document.getElementById('lista-contras').innerHTML = contras.length ? contras.map(c => `<li>${c}</li>`).join('') : '<li>Introduce mediciones para detectar puntos débiles.</li>';
         }
 
-        function limpiarComparador() {
-            datosGuardados = [];
-            actualizarTabla();
-            guardarEstado();
+        function actualizarTablaResumen(fondo, pared, capTeo, pctUtil, pctInd, deltaT) {
+            const tbody = document.getElementById('resumenTabla');
+            tbody.innerHTML = `
+                <tr><td>Marca / Modelo</td><td>${getValTxt('marca')} ${getValTxt('modelo')}</td></tr>
+                <tr><td>Tipo / Material</td><td>${getValTxt('tipo')} (${getValTxt('material')})</td></tr>
+                <tr><td>Grosor Fondo Difusor</td><td>${fondo.toFixed(1)} mm</td></tr>
+                <tr><td>Grosor Pared / Borde</td><td>${pared.toFixed(2)} mm / ${getValTxt('tipo-borde')}</td></tr>
+                <tr><td>Planitud / Concavidad</td><td>${getValTxt('tipoConcavidad')} (${getValNum('galgaFrio')} mm)</td></tr>
+                <tr><td>Fondo Magnético</td><td>${getValTxt('tipoDiscoFondo')} (${getValTxt('fuerzaMagnetica')})</td></tr>
+                <tr><td>Balance Mango</td><td>${getValTxt('balanceMango')}</td></tr>
+                <tr><td>Boil Test (Ebullición)</td><td>${getValTxt('boilTestPatron')}</td></tr>
+                <tr><td>Capacidad Teórica</td><td>${capTeo.toFixed(2)} L</td></tr>
+                <tr><td>Aprovechamiento Base Útil</td><td>${pctUtil.toFixed(1)}%</td></tr>
+                <tr><td>Cobertura de Inducción</td><td>${pctInd.toFixed(1)}%</td></tr>
+                <tr><td>Gradiente Térmico (ΔT)</td><td>${deltaT > 0 ? deltaT.toFixed(1) + ' °C' : '--'}</td></tr>
+                <tr><td>Ergonomía / Fijación</td><td>${estadoOptions.fijacion || '-'} (${estadoOptions.materialMango || '-'})</td></tr>
+            `;
         }
 
-        function exportarCSV() {
-            const marca = document.getElementById('marca').value || 'Sin_Marca';
-            const modelo = document.getElementById('modelo').value || 'Sin_Modelo';
-            
-            const filas = [
-                ["Campo", "Valor"],
-                ["Fecha Auditoria", new Date().toLocaleString()],
-                ["Marca", marca],
-                ["Modelo", modelo],
-                ["Tipo de Pieza", document.getElementById('tipo').value],
-                ["Material", document.getElementById('material').value],
-                ["Diametro Superior Borde (cm)", document.getElementById('diametro').value],
-                ["Largo Total c/Mango (cm)", document.getElementById('largoTotal').value || 'N/A'],
-                ["Altura Pared / Util (cm)", document.getElementById('alturaTotal').value || 'N/A'],
-                ["Largo del Mango (cm)", document.getElementById('largoMango').value || 'N/A'],
-                ["Base Real Util Llana (cm)", document.getElementById('diametroBaseReal').value],
-                ["Clasificacion Geometrica Auto", nombreGeometriaAuto],
-                ["% Util vs Borde", document.getElementById('pctUtil').value],
-                ["Disco Induccion (cm)", document.getElementById('diametroInduccion').value],
-                ["% Cobertura Induccion", document.getElementById('pctInduccion').value],
-                ["Capacidad Teorica (L)", capTeoricaVal.toFixed(2)],
-                ["Capacidad Real Medida (L)", document.getElementById('capReal').value || 'N/A'],
-                ["Peso (g)", document.getElementById('peso').value],
-                ["Grosor Fondo (mm)", fondoCalc],
-                ["Grosor Pared Cuerpo (mm)", document.getElementById('grosor-pared').value],
-                ["Perfil de Borde", document.getElementById('tipo-borde').value],
-                ["Espesor Real del Labio (mm)", document.getElementById('espesor-labio').value || 'N/A'],
-                ["Ancho / Vuelo del Labio (mm)", document.getElementById('vuelo-labio').value || 'N/A'],
-                ["Diagnostico Estructural Borde", estadoPared.texto],
-                ["Analisis Borde (Detalle)", estadoPared.comentario],
-                ["Fijacion Mango", selecciones.fijacion],
-                ["Material Mango", selecciones.materialMango],
-                ["Termica Mango", selecciones.termica],
-                ["Control Vertido", selecciones.vertido],
-                ["Fogon Usado", document.getElementById('fogonUsado').value],
-                ["Temp Centro Inicio (C)", document.getElementById('tempCentro').value],
-                ["Temp Borde Inicio (C)", document.getElementById('tempBorde').value],
-                ["Caida Inicial 60s (C)", document.getElementById('temp60s').value || 'N/A'],
-                ["Retencion Real 180s (C)", document.getElementById('temp180s').value || 'N/A'],
-                ["Puntuacion Global (0-100)", evaluacionGlobal.nota],
-                ["Clasificacion de Gama", evaluacionGlobal.categoria],
-                ["Notas / Conclusiones", document.getElementById('notasAnalisis').value.replace(/\n/g, ' ')]
+        function exportarExcel() {
+            const marca = getValTxt('marca') || 'MarcaDesconocida';
+            const modelo = getValTxt('modelo') || 'ModeloDesconocido';
+            const fecha = new Date().toISOString().slice(0, 10);
+
+            const datosExcel = [
+                ["PARÁMETRO TÉCNICO", "VALOR REGISTRADO / CALCULADO"],
+                ["Fecha de Auditoría", fecha],
+                ["Marca", getValTxt('marca')],
+                ["Modelo", getValTxt('modelo')],
+                ["Tipo de Pieza", getValTxt('tipo')],
+                ["Material", getValTxt('material')],
+                ["Diámetro Superior (cm)", getValNum('diametro')],
+                ["Peso (g)", getValNum('peso')],
+                ["Largo Total (cm)", getValNum('largoTotal')],
+                ["Altura Pared / Útil (cm)", getValNum('alturaTotal')],
+                ["Largo Mango/Asa (cm)", getValNum('largoMango')],
+                ["Grosor Fondo Difusor (mm)", (getValNum('mext') - getValNum('mint')).toFixed(1)],
+                ["Grosor Pared (mm)", getValNum('grosor-pared').toFixed(2)],
+                ["Perfil de Borde", getValTxt('tipo-borde')],
+                ["Espesor Labio/Borde (mm)", getValNum('espesor-labio').toFixed(2)],
+                ["Vuelo Labio (mm)", getValNum('vuelo-labio').toFixed(1)],
+                ["Planitud / Concavidad en Frío", `${getValTxt('tipoConcavidad')} (${getValNum('galgaFrio')} mm)`],
+                ["Fondo Magnético", `${getValTxt('tipoDiscoFondo')} (${getValTxt('fuerzaMagnetica')})`],
+                ["Fijación del Mango", estadoOptions.fijacion || '-'],
+                ["Material del Mango", estadoOptions.materialMango || '-'],
+                ["Balance / Centro Gravedad", getValTxt('balanceMango')],
+                ["Control de Vertido", estadoOptions.vertido || '-'],
+                ["Térmica del Mango", estadoOptions.termica || '-'],
+                ["Fogón Usado", getValTxt('fogonUsado')],
+                ["Temp. Centro Inicio (°C)", getValNum('tempCentro')],
+                ["Temp. Borde Inicio (°C)", getValNum('tempBorde')],
+                ["Gradiente Térmico (ΔT °C)", Math.abs(getValNum('tempCentro') - getValNum('tempBorde')).toFixed(1)],
+                ["Boil Test (Patrón Burbujas)", getValTxt('boilTestPatron')],
+                ["Base Real Útil (cm)", getValNum('diametroBaseReal')],
+                ["Disco Inducción (cm)", getValNum('diametroInduccion')],
+                ["Capacidad Teórica (L)", document.getElementById('capTeorica').value],
+                ["Capacidad Real Medida (L)", getValNum('capReal')],
+                ["% Aprovechamiento Base Útil", document.getElementById('pctUtil').value],
+                ["% Cobertura Inducción", document.getElementById('pctInduccion').value],
+                ["PUNTUACIÓN GLOBAL", document.getElementById('puntuacion-global').innerText],
+                ["Evaluación Final", document.getElementById('badge-evaluacion-final').innerText],
+                ["Observaciones", getValTxt('notasAnalisis')]
             ];
 
-            let contenidoCSV = "data:text/csv;charset=utf-8,\uFEFF";
-            filas.forEach(fila => { contenidoCSV += `"${fila[0]}";"${fila[1]}"\r\n`; });
+            if (typeof XLSX !== 'undefined') {
+                const ws = XLSX.utils.aoa_to_sheet(datosExcel);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Auditoría");
+                XLSX.writeFile(wb, `Auditoria_${marca}_${modelo}_${fecha}.xlsx`);
+            } else {
+                let csvContent = "data:text/csv;charset=utf-8,";
+                datosExcel.forEach(row => {
+                    csvContent += row.map(e => `"${e}"`).join(";") + "\n";
+                });
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `Auditoria_${marca}_${modelo}_${fecha}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
 
-            const encodedUri = encodeURI(contenidoCSV);
-            const enlace = document.createElement("a");
-            enlace.setAttribute("href", encodedUri);
-            enlace.setAttribute("download", `auditoria_${marca}_${modelo}.csv`);
-            document.body.appendChild(enlace);
-            enlace.click();
-            document.body.removeChild(enlace);
+        function exportarTexto() {
+            const informe = `AUDITORÍA TÉCNICA DE MENAJE
+----------------------------------------
+Marca: ${getValTxt('marca')} | Modelo: ${getValTxt('modelo')}
+Tipo: ${getValTxt('tipo')} | Material: ${getValTxt('material')}
+Peso: ${getValNum('peso')} g | Largo Total: ${getValNum('largoTotal')} cm
+
+METROLOGÍA:
+- Fondo Difusor: ${getValNum('mext') - getValNum('mint')} mm
+- Pared: ${getValNum('grosor-pared')} mm | Borde: ${getValTxt('tipo-borde')}
+- Planitud: ${getValTxt('tipoConcavidad')} (${getValNum('galgaFrio')} mm)
+- Fondo Inducción: ${getValTxt('tipoDiscoFondo')} (${getValTxt('fuerzaMagnetica')})
+- Balance / Centro Gravedad: ${getValTxt('balanceMango')}
+- Boil Test: ${getValTxt('boilTestPatron')}
+- Capacidad Teórica: ${getValTxt('capTeorica')}
+- Cobertura Inducción: ${getValTxt('pctInduccion')}
+
+EVALUACIÓN Y SCORE: ${document.getElementById('puntuacion-global').innerText}
+Notas: ${getValTxt('notasAnalisis')}`;
+
+            navigator.clipboard.writeText(informe).then(() => {
+                alert('¡Informe copiado al portapapeles!');
+            }).catch(() => {
+                alert('Error al copiar. Revisa los permisos.');
+            });
         }
 
         function guardarEstado() {
-            const estado = {
-                inputs: {
-                    marca: document.getElementById('marca').value,
-                    modelo: document.getElementById('modelo').value,
-                    diametro: document.getElementById('diametro').value,
-                    peso: document.getElementById('peso').value,
-                    largoTotal: document.getElementById('largoTotal').value,
-                    alturaTotal: document.getElementById('alturaTotal').value,
-                    largoMango: document.getElementById('largoMango').value,
-                    tipo: document.getElementById('tipo').value,
-                    material: document.getElementById('material').value,
-                    mint: document.getElementById('mint').value,
-                    mext: document.getElementById('mext').value,
-                    grosorPared: document.getElementById('grosor-pared').value,
-                    espesorLabio: document.getElementById('espesor-labio').value,
-                    vueloLabio: document.getElementById('vuelo-labio').value,
-                    tipoBorde: document.getElementById('tipo-borde').value,
-                    diametroBaseReal: document.getElementById('diametroBaseReal').value,
-                    diametroInduccion: document.getElementById('diametroInduccion').value,
-                    capReal: document.getElementById('capReal').value,
-                    fogonUsado: document.getElementById('fogonUsado').value,
-                    tempCentro: document.getElementById('tempCentro').value,
-                    tempBorde: document.getElementById('tempBorde').value,
-                    temp60s: document.getElementById('temp60s').value,
-                    temp180s: document.getElementById('temp180s').value,
-                    notasAnalisis: document.getElementById('notasAnalisis').value
-                },
-                selecciones: selecciones,
-                datosGuardados: datosGuardados
+            const data = {
+                inputs: {},
+                options: estadoOptions
             };
-            localStorage.setItem('auditoria_menaje_datos', JSON.stringify(estado));
+            document.querySelectorAll('input, select, textarea').forEach(el => {
+                if (el.id) data.inputs[el.id] = el.value;
+            });
+            localStorage.setItem('auditoria_menaje_v7', JSON.stringify(data));
         }
 
         function cargarEstado() {
-            const guardado = localStorage.getItem('auditoria_menaje_datos');
-            if (!guardado) return;
-
-            const estado = JSON.parse(guardado);
-            if (estado.inputs) {
-                Object.keys(estado.inputs).forEach(key => {
-                    let idMap = key;
-                    if (key === 'grosorPared') idMap = 'grosor-pared';
-                    if (key === 'espesorLabio') idMap = 'espesor-labio';
-                    if (key === 'vueloLabio') idMap = 'vuelo-labio';
-                    if (key === 'tipoBorde') idMap = 'tipo-borde';
-                    const el = document.getElementById(idMap);
-                    if (el) el.value = estado.inputs[key];
-                });
+            const saved = localStorage.getItem('auditoria_menaje_v7');
+            if (!saved) return;
+            try {
+                const data = JSON.parse(saved);
+                if (data.inputs) {
+                    Object.keys(data.inputs).forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.value = data.inputs[id];
+                    });
+                }
+                if (data.options) {
+                    Object.assign(estadoOptions, data.options);
+                    Object.keys(data.options).forEach(grupo => {
+                        const val = data.options[grupo];
+                        if (val) {
+                            const btn = Array.from(document.querySelectorAll('.btn-opt')).find(b => b.innerText.includes(val) || b.getAttribute('onclick')?.includes(val));
+                            if (btn) btn.classList.add('active');
+                        }
+                    });
+                }
+                calcularMetrologia();
+            } catch (e) {
+                console.error("Error al cargar estado local", e);
             }
-
-            if (estado.selecciones) {
-                selecciones = estado.selecciones;
-                Object.keys(selecciones).forEach(grupo => {
-                    const val = selecciones[grupo];
-                    if (val) {
-                        const btns = document.querySelectorAll(`#group-${grupo.replace(/([A-Z])/g, '-$1').toLowerCase()} .btn-opt`);
-                        btns.forEach(b => {
-                            if (b.innerText.includes(val) || val.includes(b.innerText)) {
-                                b.classList.add('active');
-                            }
-                        });
-                    }
-                });
-            }
-
-            if (estado.datosGuardados) {
-                datosGuardados = estado.datosGuardados;
-                actualizarTabla();
-            }
-
-            calcularMetrologia();
         }
 
         function limpiarFormulario() {
-            if (confirm("¿Quieres borrar los datos de la auditoría actual?")) {
-                const campos = ['marca', 'modelo', 'diametro', 'peso', 'largoTotal', 'alturaTotal', 'largoMango', 'mint', 'mext', 'grosor-pared', 'espesor-labio', 'vuelo-labio', 'diametroBaseReal', 'diametroInduccion', 'capReal', 'fogonUsado', 'tempBorde', 'temp60s', 'temp180s', 'notasAnalisis'];
-                campos.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-                document.getElementById('tempCentro').value = '180';
-                document.getElementById('tipo-borde').value = 'redondeado';
-                selecciones = { fijacion: '', materialMango: '', termica: '', vertido: '' };
-                document.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('active'));
-                calcularMetrologia();
+            if (confirm("¿Estás seguro de reiniciar todos los datos de la ficha?")) {
+                localStorage.removeItem('auditoria_menaje_v7');
+                location.reload();
             }
         }
+
+        window.onload = cargarEstado;
     </script>
 </body>
 </html>
