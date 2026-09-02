@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Auditoría Técnica de Menaje v4.9</title>
+    <title>Auditoría Técnica de Menaje v6.0</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -27,7 +27,8 @@
         h2 { font-size: 1.05rem; color: #f1f5f9; margin-bottom: 12px; text-transform: uppercase; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        @media (max-width: 600px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
 
         .form-group { display: flex; flex-direction: column; margin-bottom: 10px; width: 100%; }
         label { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
@@ -61,6 +62,11 @@
         table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.8rem; }
         th, td { border: 1px solid var(--border-color); padding: 8px 4px; text-align: center; }
         th { background-color: #0f172a; color: var(--text-muted); }
+
+        /* Estilos del Informe Global */
+        .summary-score { font-size: 2.8rem; font-weight: 900; color: #38bdf8; text-align: center; margin: 4px 0; }
+        .bullet-list { font-size: 0.82rem; color: #cbd5e1; text-align: left; padding-left: 18px; margin-top: 6px; }
+        .bullet-list li { margin-bottom: 4px; }
     </style>
 </head>
 <body>
@@ -89,6 +95,21 @@
             <div class="form-group">
                 <label>Peso (gramos)</label>
                 <input type="number" id="peso" placeholder="Ej. 850" step="5" oninput="guardarEstado()">
+            </div>
+        </div>
+
+        <div class="grid-3">
+            <div class="form-group">
+                <label style="color:#38bdf8;">Largo Total c/Mango (cm)</label>
+                <input type="number" id="largoTotal" placeholder="Ej. 48.5" step="0.1" oninput="guardarEstado()">
+            </div>
+            <div class="form-group">
+                <label style="color:#38bdf8;">Altura Total (cm)</label>
+                <input type="number" id="alturaTotal" placeholder="Ej. 6.2" step="0.1" oninput="guardarEstado()">
+            </div>
+            <div class="form-group">
+                <label style="color:#38bdf8;">Largo del Mango (cm)</label>
+                <input type="number" id="largoMango" placeholder="Ej. 19.5" step="0.1" oninput="guardarEstado()">
             </div>
         </div>
 
@@ -295,9 +316,33 @@
         </div>
     </div>
 
-    <!-- 5. CONCLUSIONES Y ACCIONES -->
+    <!-- 5. DIAGNÓSTICO Y EVALUACIÓN FINAL -->
+    <div class="card" style="border: 2px solid var(--accent-blue);">
+        <h2>5. Evaluación Final de Calidad</h2>
+        <div class="metric-display">
+            <label>Calificación Global Calculada</label>
+            <div id="puntuacion-global" class="summary-score">-- / 100</div>
+            <div id="badge-evaluacion-final" class="status-badge">Esperando Datos</div>
+        </div>
+
+        <div style="margin-top: 12px;">
+            <label style="color: var(--status-green);">Puntos Fuertes:</label>
+            <ul id="lista-pros" class="bullet-list">
+                <li>Introduce datos de mediciones para calcular fortalezas.</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 10px;">
+            <label style="color: var(--status-red);">Aspectos de Mejora / Limitaciones:</label>
+            <ul id="lista-contras" class="bullet-list">
+                <li>Introduce datos de mediciones para detectar puntos débiles.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 6. OBSERVACIONES Y ACCIONES -->
     <div class="card">
-        <h2>5. Observaciones Finales</h2>
+        <h2>6. Observaciones Finales y Exportación</h2>
         <div class="form-group">
             <textarea id="notasAnalisis" rows="3" placeholder="Comentarios del directo, calidad del antiadherente, ergonomía..." oninput="guardarEstado()"></textarea>
         </div>
@@ -317,7 +362,7 @@
                         <th>Pieza</th>
                         <th>Medidas</th>
                         <th>Fondo</th>
-                        <th>Pared / Borde</th>
+                        <th>Evaluación</th>
                     </tr>
                 </thead>
                 <tbody id="tabla-comparador">
@@ -334,6 +379,7 @@
         let fondoCalc = 0;
         let estadoFondo = { texto: "Sin datos", color: "var(--border-color)" };
         let estadoPared = { texto: "Sin datos", color: "var(--border-color)", comentario: "-" };
+        let evaluacionGlobal = { nota: 0, categoria: "Sin Datos", color: "var(--border-color)" };
 
         window.onload = function() { cargarEstado(); };
 
@@ -347,7 +393,7 @@
             const parent = btn.parentElement;
             parent.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            guardarEstado();
+            calcularMetrologia();
         }
 
         function calcularMetrologia() {
@@ -537,7 +583,117 @@
                 txtComentarioTermico.innerText = "-";
             }
 
+            generarEvaluacionFinal();
             guardarEstado();
+        }
+
+        function generarEvaluacionFinal() {
+            let nota = 50; // Puntuación base
+            let pros = [];
+            let contras = [];
+
+            // 1. Evaluación de Fondo
+            if (fondoCalc >= 4.0) {
+                nota += 20;
+                pros.push(`Excelente espesor de fondo (${fondoCalc} mm), alta retención de calor.`);
+            } else if (fondoCalc >= 2.8) {
+                nota += 10;
+                pros.push(`Fondo adecuado (${fondoCalc} mm) para uso doméstico.`);
+            } else if (fondoCalc > 0) {
+                nota -= 15;
+                contras.push(`Fondo muy delgado (${fondoCalc} mm), riesgo de deformación o sobrecalentamiento.`);
+            }
+
+            // 2. Cobertura de Inducción
+            const diamBase = parseInputNumber('diametroBaseReal');
+            const diamInd = parseInputNumber('diametroInduccion');
+            if (diamBase > 0 && diamInd > 0) {
+                let pctInd = (diamInd / diamBase) * 100;
+                if (pctInd >= 85) {
+                    nota += 15;
+                    pros.push(`Excelente cobertura de inducción (${pctInd.toFixed(1)}%), óptimo rendimiento en vitro/inducción.`);
+                } else if (pctInd < 70) {
+                    nota -= 15;
+                    contras.push(`Disco de inducción pequeño (${pctInd.toFixed(1)}% de la base), pérdida de eficiencia y calor desigual.`);
+                }
+            }
+
+            // 3. Gradiente Térmico
+            const tCentro = parseInputNumber('tempCentro');
+            const tBorde = parseInputNumber('tempBorde');
+            if (tCentro > 0 && tBorde > 0) {
+                let delta = Math.abs(tCentro - tBorde);
+                if (delta <= 15) {
+                    nota += 15;
+                    pros.push(`Reparto de calor muy homogéneo (ΔT de solo ${delta} °C).`);
+                } else if (delta > 30) {
+                    nota -= 15;
+                    contras.push(`Elevado gradiente térmico (ΔT de ${delta} °C), zonas frías en los bordes.`);
+                }
+            }
+
+            // 4. Ergonomía y Estructura
+            const tipoBorde = document.getElementById('tipo-borde').value;
+            if (tipoBorde === 'redondeado' || tipoBorde === 'macizo') {
+                nota += 10;
+                pros.push("Estructura de borde reforzada contra golpes y choques térmicos.");
+            } else if (tipoBorde === 'recto' && parseInputNumber('grosor-pared') < 1.0) {
+                nota -= 10;
+                contras.push("Borde recto delgado sin refuerzo, susceptible a abolladuras.");
+            }
+
+            if (selecciones.termica === 'Aislado (Frío)') {
+                nota += 5;
+                pros.push("Mango con buen aislamiento térmico para manipulación segura.");
+            } else if (selecciones.termica === 'Quema') {
+                nota -= 10;
+                contras.push("El mango se calienta en exceso; requiere protección en su uso.");
+            }
+
+            if (selecciones.vertido === 'Antigoteo') {
+                nota += 5;
+                pros.push("Diseño de borde limpio que evita goteos al verter líquidos.");
+            }
+
+            // Ajuste de rango 0 - 100
+            nota = Math.min(100, Math.max(0, nota));
+
+            // Veredicto
+            let categoria = "Gama Baja / Económica";
+            let color = "var(--status-red)";
+
+            if (nota >= 80) {
+                categoria = "Gama Alta / Calidad Profesional";
+                color = "var(--status-green)";
+            } else if (nota >= 60) {
+                categoria = "Gama Media / Uso Doméstico Equilibrado";
+                color = "var(--status-yellow)";
+            }
+
+            evaluacionGlobal = { nota, categoria, color };
+
+            // Renderizar en el DOM
+            const elemScore = document.getElementById('puntuacion-global');
+            const elemBadge = document.getElementById('badge-evaluacion-final');
+            const elemPros = document.getElementById('lista-pros');
+            const elemContras = document.getElementById('lista-contras');
+
+            if (fondoCalc === 0 && parseInputNumber('grosor-pared') === 0) {
+                elemScore.innerText = "-- / 100";
+                elemBadge.innerText = "Sin Datos Suficientes";
+                elemBadge.style.backgroundColor = "var(--border-color)";
+                elemPros.innerHTML = "<li>Introduce datos de mediciones para calcular fortalezas.</li>";
+                elemContras.innerHTML = "<li>Introduce datos de mediciones para detectar puntos débiles.</li>";
+                return;
+            }
+
+            elemScore.innerText = `${nota} / 100`;
+            elemScore.style.color = color;
+            elemBadge.innerText = categoria;
+            elemBadge.style.backgroundColor = color;
+
+            elemPros.innerHTML = pros.length > 0 ? pros.map(p => `<li>${p}</li>`).join('') : "<li>Sin fortalezas destacadas registradas.</li>";
+            elemContras.innerHTML = contras.length > 0 ? contras.map(c => `<li>${c}</li>`).join('') : "<li>Sin puntos críticos graves detectados.</li>";
         }
 
         function dibujarEsquemaBorde(tipo) {
@@ -618,9 +774,8 @@
             const modelo = document.getElementById('modelo').value || 'S/D';
             const diam = document.getElementById('diametro').value || '-';
             const peso = document.getElementById('peso').value || '-';
-            const paredVal = parseInputNumber('grosor-pared');
 
-            if (fondoCalc === 0 && paredVal === 0) {
+            if (fondoCalc === 0 && parseInputNumber('grosor-pared') === 0) {
                 alert("Introduce al menos una medida antes de guardar.");
                 return;
             }
@@ -632,8 +787,8 @@
                 medidas: `Ø${diam}cm / ${peso}g`,
                 fondo: `${fondoCalc} mm`,
                 fondoColor: estadoFondo.color,
-                pared: `${estadoPared.texto}`,
-                paredColor: estadoPared.color
+                evaluacion: `${evaluacionGlobal.nota}/100 - ${evaluacionGlobal.categoria}`,
+                evaluacionColor: evaluacionGlobal.color
             });
 
             actualizarTabla();
@@ -652,7 +807,7 @@
                     <td><strong>${item.nombre}</strong></td>
                     <td style="font-size: 0.75rem;">${item.medidas}</td>
                     <td style="font-weight: bold; color: ${item.fondoColor};">${item.fondo}</td>
-                    <td style="font-weight: bold; color: ${item.paredColor}; font-size:0.75rem;">${item.pared}</td>
+                    <td style="font-weight: bold; color: ${item.evaluacionColor}; font-size:0.75rem;">${item.evaluacion}</td>
                 </tr>
             `).join('');
         }
@@ -675,6 +830,9 @@
                 ["Tipo de Pieza", document.getElementById('tipo').value],
                 ["Material", document.getElementById('material').value],
                 ["Diametro Superior Borde (cm)", document.getElementById('diametro').value],
+                ["Largo Total c/Mango (cm)", document.getElementById('largoTotal').value || 'N/A'],
+                ["Altura Total (cm)", document.getElementById('alturaTotal').value || 'N/A'],
+                ["Largo del Mango (cm)", document.getElementById('largoMango').value || 'N/A'],
                 ["Base Real Util Llana (cm)", document.getElementById('diametroBaseReal').value],
                 ["Clasificacion Forma", document.getElementById('badge-geometria').innerText],
                 ["% Util vs Borde", document.getElementById('pctUtil').value],
@@ -697,6 +855,8 @@
                 ["Temp Borde Inicio (C)", document.getElementById('tempBorde').value],
                 ["Caida Inicial 60s (C)", document.getElementById('temp60s').value || 'N/A'],
                 ["Retencion Real 180s (C)", document.getElementById('temp180s').value || 'N/A'],
+                ["Puntuación Global (0-100)", evaluacionGlobal.nota],
+                ["Clasificación de Gama", evaluacionGlobal.categoria],
                 ["Notas / Conclusiones", document.getElementById('notasAnalisis').value.replace(/\n/g, ' ')]
             ];
 
@@ -719,6 +879,9 @@
                     modelo: document.getElementById('modelo').value,
                     diametro: document.getElementById('diametro').value,
                     peso: document.getElementById('peso').value,
+                    largoTotal: document.getElementById('largoTotal').value,
+                    alturaTotal: document.getElementById('alturaTotal').value,
+                    largoMango: document.getElementById('largoMango').value,
                     tipo: document.getElementById('tipo').value,
                     material: document.getElementById('material').value,
                     mint: document.getElementById('mint').value,
@@ -784,7 +947,7 @@
 
         function limpiarFormulario() {
             if (confirm("¿Quieres borrar los datos de la auditoría actual?")) {
-                const campos = ['marca', 'modelo', 'diametro', 'peso', 'mint', 'mext', 'grosor-pared', 'espesor-labio', 'vuelo-labio', 'diametroBaseReal', 'diametroInduccion', 'fogonUsado', 'tempBorde', 'temp60s', 'temp180s', 'notasAnalisis'];
+                const campos = ['marca', 'modelo', 'diametro', 'peso', 'largoTotal', 'alturaTotal', 'largoMango', 'mint', 'mext', 'grosor-pared', 'espesor-labio', 'vuelo-labio', 'diametroBaseReal', 'diametroInduccion', 'fogonUsado', 'tempBorde', 'temp60s', 'temp180s', 'notasAnalisis'];
                 campos.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
                 document.getElementById('tempCentro').value = '180';
                 document.getElementById('tipo-borde').value = 'redondeado';
