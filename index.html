@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Auditoría Técnica de Menaje v8.1</title>
+    <title>Auditoría Técnica de Menaje v8.9</title>
     <!-- Librería para exportación nativa a Excel (.xlsx) sin backend -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
@@ -37,7 +37,7 @@
         input, select, textarea { width: 100%; background-color: #0f172a; border: 1.5px solid var(--border-color); color: var(--text-color); padding: 10px; border-radius: 6px; font-size: 0.95rem; font-weight: bold; outline: none; }
         input:focus, select:focus, textarea:focus { border-color: var(--accent-blue); }
 
-        .input-large { font-size: 1.3rem; text-align: center; padding: 8px; }
+        .input-large { font-size: 1.2rem; text-align: center; padding: 8px; }
         .metric-display { text-align: center; padding: 12px; background: #0f172a; border-radius: 8px; border: 1.5px solid var(--border-color); margin-top: 8px; }
         .thickness-value { font-size: 2rem; font-weight: 900; line-height: 1.1; margin: 6px 0; color: #38bdf8; }
         .status-badge { display: block; padding: 8px; border-radius: 6px; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; color: #ffffff; background-color: var(--border-color); }
@@ -74,7 +74,7 @@
 </head>
 <body>
 
-    <div class="header-title">AUDITORÍA TÉCNICA DE MENAJE v8.1</div>
+    <div class="header-title">AUDITORÍA TÉCNICA DE MENAJE v8.9</div>
 
     <!-- 1. IDENTIFICACIÓN DE LA PIEZA -->
     <div class="card">
@@ -108,7 +108,7 @@
             </div>
             <div class="form-group">
                 <label style="color:#38bdf8;">Altura Ext. Total (cm)</label>
-                <input type="number" id="alturaTotal" placeholder="Ej. 7.5" step="0.1" oninput="calcularMetrologia()">
+                <input type="number" id="alturaTotal" placeholder="Ej. 5.5" step="0.1" oninput="calcularMetrologia()">
             </div>
             <div class="form-group">
                 <label style="color:#38bdf8;">Largo Mango/Asa (cm)</label>
@@ -147,15 +147,15 @@
     <div class="card">
         <h2>2. Metrología y Geometría de Base</h2>
         
-        <label>A. Espesor de Fondo Difusor (Cálculo)</label>
+        <label>A. Espesor de Fondo Difusor y Profundidad</label>
         <div class="grid-2">
             <div class="form-group">
                 <label style="font-size:0.7rem;">Lectura Varilla Int. (mm)</label>
                 <input type="number" id="mint" class="input-large" step="0.1" placeholder="Ej: 70" oninput="calcularMetrologia()">
             </div>
             <div class="form-group">
-                <label style="font-size:0.7rem;">Altura Ext. (mm)</label>
-                <input type="number" id="mext" class="input-large" step="0.1" placeholder="Ej: 75" oninput="calcularMetrologia()">
+                <label style="font-size:0.7rem;">Altura Ext. Varilla (mm)</label>
+                <input type="number" id="alturaExtMm" class="input-large" step="0.1" placeholder="Ej: 75" oninput="calcularMetrologia()">
             </div>
         </div>
 
@@ -366,24 +366,75 @@
 
     <!-- 6. ENSAYOS TÉRMICOS Y BOIL TEST -->
     <div class="card">
-        <h2>6. Ensayo Térmico y Boil Test (Agua)</h2>
+        <h2>6. Ensayos Térmicos y Boil Test (Agua)</h2>
         <div class="protocol-note">
-            <strong>Protocolo en Seco & Agua:</strong> Medir reparto de calor a 150°C y patrón de burbujas en ebullición.
+            <strong>Protocolo Térmico:</strong> Al alcanzar 150°C, se retira de la fuente de calor. Se miden los 5 puntos iniciales, y tras 3 minutos se evalúa la inercia térmica y el reparto.
         </div>
         
+        <label style="color:#38bdf8; margin-bottom:6px; display:block;">A. Medición Inicial a 150°C (Centro y 4 Puntos)</label>
+        <div class="grid-3">
+            <div class="form-group">
+                <label>Centro (°C)</label>
+                <input type="number" id="tempCentro150" step="0.1" value="150" oninput="calcularMetrologia()">
+            </div>
+            <div class="form-group">
+                <label>Punto 1 (Norte) (°C)</label>
+                <input type="number" id="tempP1" step="0.1" value="150" oninput="calcularMetrologia()">
+            </div>
+            <div class="form-group">
+                <label>Punto 2 (Sur) (°C)</label>
+                <input type="number" id="tempP2" step="0.1" value="150" oninput="calcularMetrologia()">
+            </div>
+        </div>
         <div class="grid-2">
             <div class="form-group">
-                <label>Tiempo hasta Ebullición (seg)</label>
-                <input type="number" id="tiempoBoil" placeholder="Ej: 180" step="1" oninput="calcularMetrologia()">
+                <label>Punto 3 (Este) (°C)</label>
+                <input type="number" id="tempP3" step="0.1" value="150" oninput="calcularMetrologia()">
             </div>
             <div class="form-group">
-                <label>Homogeneidad de Burbujas</label>
-                <select id="patronBurbujas" onchange="calcularMetrologia()">
-                    <option value="100% Uniforme">100% Uniforme en toda la base</option>
-                    <option value="Centro Concentrado">Centro Concentrado (Efecto Anillo)</option>
-                    <option value="Burbujeo Irregular">Irregular / Puntos fríos visibles</option>
-                </select>
+                <label>Punto 4 (Oeste) (°C)</label>
+                <input type="number" id="tempP4" step="0.1" value="150" oninput="calcularMetrologia()">
             </div>
+        </div>
+
+        <label style="color:#34d399; margin-top:12px; margin-bottom:6px; display:block;">B. Medición a los 3 Minutos (Inercia Térmica)</label>
+        <div class="grid-3">
+            <div class="form-group">
+                <label>Centro 3 min (°C)</label>
+                <input type="number" id="t3_centro" step="0.1" placeholder="Ej: 120" oninput="calcularMetrologia()">
+            </div>
+            <div class="form-group">
+                <label>Punto 1 3 min (°C)</label>
+                <input type="number" id="t3_p1" step="0.1" placeholder="Ej: 115" oninput="calcularMetrologia()">
+            </div>
+            <div class="form-group">
+                <label>Punto 2 3 min (°C)</label>
+                <input type="number" id="t3_p2" step="0.1" placeholder="Ej: 115" oninput="calcularMetrologia()">
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Punto 3 3 min (°C)</label>
+                <input type="number" id="t3_p3" step="0.1" placeholder="Ej: 115" oninput="calcularMetrologia()">
+            </div>
+            <div class="form-group">
+                <label>Punto 4 3 min (°C)</label>
+                <input type="number" id="t3_p4" step="0.1" placeholder="Ej: 115" oninput="calcularMetrologia()">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top:10px;">
+            <label>Patrón de Burbujas en Ebullición (Boil Test)</label>
+            <select id="patronBurbujas" onchange="calcularMetrologia()">
+                <option value="100% Uniforme">100% Uniforme en toda la base</option>
+                <option value="Centro Concentrado">Centro Concentrado (Efecto Anillo)</option>
+                <option value="Burbujeo Irregular">Irregular / Puntos fríos visibles</option>
+            </select>
+        </div>
+
+        <div class="metric-display" style="margin-top: 10px;">
+            <label>Veredicto Automático de Reparto Térmico</label>
+            <div id="veredicto-reparto" style="font-size: 0.9rem; margin-top: 6px; font-weight: bold; color: #38bdf8;">Introduce los datos térmicos</div>
         </div>
     </div>
 
@@ -417,8 +468,8 @@
         <h2>8. Observaciones Finales y Exportación</h2>
         
         <div class="form-group">
-            <label>Observaciones Técnicas / Comentarios del Directo</label>
-            <textarea id="observaciones" rows="4" placeholder="Comentarios del directo, calidad del antiadherente, ergonomía..." oninput="calcularMetrologia()"></textarea>
+            <label>Observaciones Técnicas / Comentarios</label>
+            <textarea id="observaciones" rows="4" placeholder="Comentarios del test, antiadherente, ergonomía..." oninput="calcularMetrologia()"></textarea>
         </div>
 
         <!-- Tabla Resumen Técnico -->
@@ -452,7 +503,15 @@
                         <td id="res-balance">-</td>
                     </tr>
                     <tr>
-                        <td><strong>Boil Test (Ebullición)</strong></td>
+                        <td><strong>Temperaturas a 150°C (Centro / 4 Puntos)</strong></td>
+                        <td id="res-temp-150">-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Inercia Térmica (3 min)</strong></td>
+                        <td id="res-inercia">-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Boil Test (Patrón de Burbujas)</strong></td>
                         <td id="res-boil">-</td>
                     </tr>
                     <tr>
@@ -516,29 +575,38 @@
             let dInd = parseFloat(document.getElementById('diametroInduccion').value) || 0;
             let cReal = parseFloat(document.getElementById('capReal').value) || 0;
 
-            let mIntBruta = parseFloat(document.getElementById('mint').value) || 0;
-            let mExt = parseFloat(document.getElementById('mext').value) || 0;
+            let alturaExtTotalCm = parseFloat(document.getElementById('alturaTotal').value) || 0;
+            let lecturaVarilla = parseFloat(document.getElementById('mint').value) || 0;
+            let alturaExtMm = parseFloat(document.getElementById('alturaExtMm').value) || 0;
 
-            // 1. Grosor Fondo y Altura Útil
-            let grosorFondo = 0;
-            let altoIntCm = 0;
-
-            if (mExt > 0 && mIntBruta > 0) {
-                grosorFondo = mExt - mIntBruta;
-                altoIntCm = mIntBruta / 10;
-
-                document.getElementById('resultado-fondo').innerText = grosorFondo.toFixed(1) + " mm";
+            let grosorFondoMm = 0;
+            if (alturaExtMm > 0 && lecturaVarilla > 0) {
+                grosorFondoMm = Math.abs(lecturaVarilla - alturaExtMm);
+                document.getElementById('resultado-fondo').innerText = grosorFondoMm.toFixed(1) + " mm";
+                
                 let bFondo = document.getElementById('badge-fondo');
-                if (grosorFondo >= 5.0) {
+                if (grosorFondoMm >= 5.0) {
                     bFondo.innerText = "Excelente Fondo Difusor";
                     bFondo.style.backgroundColor = "var(--status-green)";
-                } else if (grosorFondo >= 3.0) {
+                } else if (grosorFondoMm >= 3.0) {
                     bFondo.innerText = "Fondo Estándar";
                     bFondo.style.backgroundColor = "var(--accent-blue)";
                 } else {
                     bFondo.innerText = "Fondo Ligero";
                     bFondo.style.backgroundColor = "var(--status-yellow)";
                 }
+            } else {
+                document.getElementById('resultado-fondo').innerText = "0.0 mm";
+                document.getElementById('badge-fondo').innerText = "Sin Medición";
+                document.getElementById('badge-fondo').style.backgroundColor = "var(--border-color)";
+            }
+
+            let grosorFondoCm = grosorFondoMm / 10;
+            let altoIntCm = 0;
+
+            if (alturaExtTotalCm > 0) {
+                altoIntCm = alturaExtTotalCm - grosorFondoCm;
+                if (altoIntCm < 0) altoIntCm = 0;
 
                 document.getElementById('resultado-pared-util').innerText = altoIntCm.toFixed(1) + " cm";
                 let bPared = document.getElementById('badge-pared-util');
@@ -553,15 +621,11 @@
                     bPared.style.backgroundColor = "var(--status-yellow)";
                 }
             } else {
-                document.getElementById('resultado-fondo').innerText = "0.0 mm";
                 document.getElementById('resultado-pared-util').innerText = "0.0 cm";
-                document.getElementById('badge-fondo').innerText = "Sin Medición";
                 document.getElementById('badge-pared-util').innerText = "Sin Medición";
-                document.getElementById('badge-fondo').style.backgroundColor = "var(--border-color)";
                 document.getElementById('badge-pared-util').style.backgroundColor = "var(--border-color)";
             }
 
-            // 2. Borde y Pared
             let gPared = parseFloat(document.getElementById('grosor-pared').value) || 0;
             let tBorde = document.getElementById('tipo-borde').value;
             if (gPared > 0) {
@@ -581,7 +645,6 @@
 
             renderSVGBorde();
 
-            // 3. Capacidades y Percentiles
             let capTeoricaL = 0;
             if (dSup > 0 && bReal > 0 && altoIntCm > 0) {
                 let r1 = dSup / 2;
@@ -609,7 +672,6 @@
                 document.getElementById('pctInduccion').value = "-%";
             }
 
-            // Diagnóstico
             let boxDiag = document.getElementById('diagnostico-geometria-box');
             let txtDiag = document.getElementById('texto-diagnostico-geometria');
             if (dSup > 0 && bReal > 0 && altoIntCm > 0) {
@@ -626,7 +688,6 @@
                 boxDiag.style.display = "none";
             }
 
-            // Planitud
             let gFrio = parseFloat(document.getElementById('galgaFrio').value) || 0;
             let tConc = document.getElementById('tipoConcavidad').value;
             let bPlan = document.getElementById('badge-planitud');
@@ -638,7 +699,6 @@
                 bPlan.style.backgroundColor = "var(--border-color)";
             }
 
-            // Inducción
             let tDisco = document.getElementById('tipoDiscoFondo').value;
             let fMag = document.getElementById('fuerzaMagnetica').value;
             let bInd = document.getElementById('badge-induccion-efectiva');
@@ -653,7 +713,6 @@
                 bInd.style.backgroundColor = "var(--status-yellow)";
             }
 
-            // Coating
             let um = parseFloat(document.getElementById('espesorCapa').value) || 0;
             let tAnt = document.getElementById('tipoAntiadherente').value;
             let bAnt = document.getElementById('badge-antiadherente');
@@ -671,13 +730,49 @@
                 bAnt.style.backgroundColor = "var(--border-color)";
             }
 
+            // Datos térmicos y cálculo de reparto automático
+            let c150 = document.getElementById('tempCentro150').value;
+            let p1 = document.getElementById('tempP1').value;
+            let p2 = document.getElementById('tempP2').value;
+            let p3 = document.getElementById('tempP3').value;
+            let p4 = document.getElementById('tempP4').value;
+            
+            let t3C = parseFloat(document.getElementById('t3_centro').value) || 0;
+            let t3P1 = parseFloat(document.getElementById('t3_p1').value) || 0;
+            let t3P2 = parseFloat(document.getElementById('t3_p2').value) || 0;
+            let t3P3 = parseFloat(document.getElementById('t3_p3').value) || 0;
+            let t3P4 = parseFloat(document.getElementById('t3_p4').value) || 0;
+            let pBurb = document.getElementById('patronBurbujas').value;
+
+            let veredictoTexto = "Introduce los datos de los 3 minutos";
+            if (t3C > 0 && t3P1 > 0 && t3P2 > 0 && t3P3 > 0 && t3P4 > 0) {
+                let periferiaT3 = [t3P1, t3P2, t3P3, t3P4];
+                let avgInitPeriferia = (parseFloat(p1)||150 + parseFloat(p2)||150 + parseFloat(p3)||150 + parseFloat(p4)||150) / 4;
+                let avgPeriferiaT3 = periferiaT3.reduce((a, b) => a + b, 0) / 4;
+                let dropPeriferia = avgInitPeriferia - avgPeriferiaT3;
+                let t3Spread = Math.max(...periferiaT3) - Math.min(...periferiaT3);
+
+                if (t3Spread <= 8 && dropPeriferia <= 35) {
+                    veredictoTexto = "✅ Excelente Reparto y Retención: Distribución homogénea y gran inercia térmica.";
+                } else if (t3Spread > 15 || Math.abs(t3C - avgPeriferiaT3) > 15) {
+                    veredictoTexto = "⚠️ Reparto Irregular / Puntos Descompensados: Diferencias notables de temperatura.";
+                } else {
+                    veredictoTexto = "⚡ Reparto y Retención Moderados: Comportamiento térmico estándar aceptable.";
+                }
+            }
+            document.getElementById('veredicto-reparto').innerText = veredictoTexto;
+
             // Actualizar Tabla Resumen
             document.getElementById('res-pieza').innerText = `${tipo} ${marca} ${modelo} (${mat})`;
             document.getElementById('res-pared-borde').innerText = `${gPared > 0 ? gPared.toFixed(2) + ' mm' : '-'} / ${tBorde}`;
             document.getElementById('res-planitud').innerText = `${tConc} (${gFrio} mm)`;
             document.getElementById('res-fondo-mag').innerText = `${tDisco} (${fMag})`;
             document.getElementById('res-balance').innerText = document.getElementById('balanceMango').value;
-            document.getElementById('res-boil').innerText = document.getElementById('patronBurbujas').value;
+            
+            document.getElementById('res-temp-150').innerText = c150 ? `C: ${c150}°C | P1: ${p1||'-'} | P2: ${p2||'-'} | P3: ${p3||'-'} | P4: ${p4||'-'}` : '-';
+            document.getElementById('res-inercia').innerText = t3C ? `C: ${t3C}°C | P1: ${t3P1||'-'} | P2: ${t3P2||'-'} | P3: ${t3P3||'-'} | P4: ${t3P4||'-'}` : '-';
+            document.getElementById('res-boil').innerText = pBurb;
+
             document.getElementById('res-coating').innerText = `${tAnt} (${um > 0 ? um + ' µm' : 'Sin medir'})`;
             document.getElementById('res-cap-teorica').innerText = capTeoricaL > 0 ? capTeoricaL.toFixed(2) + " L" : "-";
             document.getElementById('res-pct-util').innerText = pctU > 0 ? pctU.toFixed(1) + "%" : "-";
@@ -692,26 +787,21 @@
             let tipo = document.getElementById('tipo-borde').value;
             let html = '';
 
-            // Línea base / horizonte
             let lineaBase = '<line x1="30" y1="80" x2="270" y2="80" stroke="#475569" stroke-width="2"/>';
 
             if (tipo === 'redondeado') {
-                // 1. Borde Redondeado / Vuelto (Curva hacia afuera)
                 html = lineaBase + `
                     <path d="M 135 80 L 135 40 Q 135 20 155 20 Q 175 20 175 35" fill="none" stroke="#38bdf8" stroke-width="12" stroke-linecap="round"/>
                     <text x="150" y="95" fill="#94a3b8" font-size="10" text-anchor="middle">Borde Redondeado / Vuelto</text>`;
             } else if (tipo === 'pestana') {
-                // 2. Borde Pestaña / Doblado (Ángulo recto horizontal)
                 html = lineaBase + `
                     <path d="M 130 80 L 130 35 L 170 35" fill="none" stroke="#38bdf8" stroke-width="12" stroke-linecap="square" stroke-linejoin="miter"/>
                     <text x="150" y="95" fill="#94a3b8" font-size="10" text-anchor="middle">Borde Pestaña / Doblado</text>`;
             } else if (tipo === 'macizo') {
-                // 3. Borde Recrecido / Macizo (Corregido con arco superior suave, sin puntas)
                 html = lineaBase + `
                     <path d="M 138 80 L 138 42 A 12 12 0 0 1 162 42 L 162 80 Z" fill="#38bdf8" stroke="#38bdf8" stroke-width="1"/>
                     <text x="150" y="95" fill="#94a3b8" font-size="10" text-anchor="middle">Borde Recrecido / Macizo</text>`;
             } else {
-                // 4. Borde Recto / Fino (Barra vertical simple)
                 html = lineaBase + `
                     <rect x="144" y="25" width="12" height="55" fill="#38bdf8" rx="1"/>
                     <text x="150" y="95" fill="#94a3b8" font-size="10" text-anchor="middle">Borde Recto / Fino</text>`;
@@ -775,9 +865,9 @@
 
         function calcularPuntuacionGlobal() {
             let score = 5.0;
-            let mExt = parseFloat(document.getElementById('mext').value) || 0;
-            let mInt = parseFloat(document.getElementById('mint').value) || 0;
-            let fondo = mExt - mInt;
+            let alturaExtMm = parseFloat(document.getElementById('alturaExtMm').value) || 0;
+            let lecturaVarilla = parseFloat(document.getElementById('mint').value) || 0;
+            let fondo = Math.abs(lecturaVarilla - alturaExtMm);
 
             if (fondo >= 5.0) score += 2.0;
             else if (fondo >= 3.0) score += 1.0;
@@ -800,6 +890,12 @@
         }
 
         function exportarExcel() {
+            let alturaExtMm = parseFloat(document.getElementById('alturaExtMm').value) || 0;
+            let lecturaVarilla = parseFloat(document.getElementById('mint').value) || 0;
+            let grosorFondo = Math.abs(lecturaVarilla - alturaExtMm);
+            let alturaExtTotalCm = parseFloat(document.getElementById('alturaTotal').value) || 0;
+            let altoIntCm = alturaExtTotalCm > 0 ? alturaExtTotalCm - (grosorFondo / 10) : 0;
+
             let data = [
                 ["CAMPO", "VALOR"],
                 ["Marca", document.getElementById('marca').value],
@@ -808,7 +904,7 @@
                 ["Peso (g)", document.getElementById('peso').value],
                 ["Largo Total (cm)", document.getElementById('largoTotal').value],
                 ["Altura Ext. Total (cm)", document.getElementById('alturaTotal').value],
-                ["Profundidad Int. Útil (cm)", (parseFloat(document.getElementById('mint').value)/10 || 0).toFixed(1)],
+                ["Profundidad Int. Útil (cm)", altoIntCm.toFixed(1)],
                 ["Grosor de Fondo (mm)", document.getElementById('resultado-fondo').innerText],
                 ["Grosor Pared (mm)", document.getElementById('grosor-pared').value],
                 ["Tipo de Borde", document.getElementById('tipo-borde').value],
@@ -819,7 +915,17 @@
                 ["Planitud / Galgas", document.getElementById('galgaFrio').value],
                 ["Tipo Disco Inducción", document.getElementById('tipoDiscoFondo').value],
                 ["Balance Mango", document.getElementById('balanceMango').value],
-                ["Boil Test", document.getElementById('patronBurbujas').value],
+                ["Temp. 150°C (Centro)", document.getElementById('tempCentro150').value],
+                ["Temp. 150°C (Punto 1)", document.getElementById('tempP1').value],
+                ["Temp. 150°C (Punto 2)", document.getElementById('tempP2').value],
+                ["Temp. 150°C (Punto 3)", document.getElementById('tempP3').value],
+                ["Temp. 150°C (Punto 4)", document.getElementById('tempP4').value],
+                ["Temp. 3 min (Centro)", document.getElementById('t3_centro').value],
+                ["Temp. 3 min (Punto 1)", document.getElementById('t3_p1').value],
+                ["Temp. 3 min (Punto 2)", document.getElementById('t3_p2').value],
+                ["Temp. 3 min (Punto 3)", document.getElementById('t3_p3').value],
+                ["Temp. 3 min (Punto 4)", document.getElementById('t3_p4').value],
+                ["Patrón de Burbujas", document.getElementById('patronBurbujas').value],
                 ["Antiadherente (µm)", document.getElementById('espesorCapa').value],
                 ["Puntuación Final", document.getElementById('puntuacion-global').innerText],
                 ["Observaciones", document.getElementById('observaciones').value]
@@ -838,7 +944,9 @@
             txt += `Planitud/Concavidad: ${document.getElementById('res-planitud').innerText}\n`;
             txt += `Fondo Magnético: ${document.getElementById('res-fondo-mag').innerText}\n`;
             txt += `Balance Mango: ${document.getElementById('res-balance').innerText}\n`;
-            txt += `Boil Test: ${document.getElementById('res-boil').innerText}\n`;
+            txt += `Temperaturas 150°C: ${document.getElementById('res-temp-150').innerText}\n`;
+            txt += `Inercia Térmica (3 min): ${document.getElementById('res-inercia').innerText}\n`;
+            txt += `Boil Test (Burbujas): ${document.getElementById('res-boil').innerText}\n`;
             txt += `Coating: ${document.getElementById('res-coating').innerText}\n`;
             txt += `Capacidad Teórica: ${document.getElementById('res-cap-teorica').innerText}\n`;
             txt += `Aprovechamiento Base: ${document.getElementById('res-pct-util').innerText}\n`;
