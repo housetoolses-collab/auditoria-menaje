@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Auditoría Técnica de Menaje v8.9</title>
+    <title>Auditoría Técnica de Menaje v9.2</title>
     <!-- Librería para exportación nativa a Excel (.xlsx) sin backend -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
@@ -74,7 +74,7 @@
 </head>
 <body>
 
-    <div class="header-title">AUDITORÍA TÉCNICA DE MENAJE v8.9</div>
+    <div class="header-title">AUDITORÍA TÉCNICA DE MENAJE v9.2</div>
 
     <!-- 1. IDENTIFICACIÓN DE LA PIEZA -->
     <div class="card">
@@ -434,7 +434,7 @@
 
         <div class="metric-display" style="margin-top: 10px;">
             <label>Veredicto Automático de Reparto Térmico</label>
-            <div id="veredicto-reparto" style="font-size: 0.9rem; margin-top: 6px; font-weight: bold; color: #38bdf8;">Introduce los datos térmicos</div>
+            <div id="veredicto-reparto" style="font-size: 0.9rem; margin-top: 6px; font-weight: bold; color: #38bdf8;">Introduce los datos de los 3 minutos</div>
         </div>
     </div>
 
@@ -443,16 +443,17 @@
         <h2>7. Evaluación del Revestimiento Antiadherente</h2>
         <div class="grid-2">
             <div class="form-group">
-                <label>Espesor Antiadherente (µm)</label>
+                <label>Espesor Antiadherente (micras)</label>
                 <input type="number" id="espesorCapa" class="input-large" step="1" placeholder="Ej: 45" oninput="calcularMetrologia()">
             </div>
             <div class="form-group">
                 <label>Tipo de Antiadherente</label>
                 <select id="tipoAntiadherente" onchange="calcularMetrologia()">
-                    <option value="PTFE Tricapa">PTFE Tricapa Reforzado</option>
-                    <option value="PTFE Bicapa">PTFE Bicapa Estándar</option>
-                    <option value="Cerámico (Sol-Gel)">Cerámico / Sol-Gel</option>
-                    <option value="Sin Antiadherente">Sin Antiadherente (Inox/Hierro)</option>
+                    <option value="PTFE Genérico / Desconocido">PTFE Genérico / Desconocido</option>
+                    <option value="PTFE Tricapa Reforzado (Titanio/Piedra)">PTFE Tricapa Reforzado (Titanio/Piedra)</option>
+                    <option value="PTFE Bicapa Estándar">PTFE Bicapa Estándar</option>
+                    <option value="Cerámico / Sol-Gel">Cerámico / Sol-Gel</option>
+                    <option value="Sin Antiadherente (Inox/Hierro)">Sin Antiadherente (Inox/Hierro)</option>
                 </select>
             </div>
         </div>
@@ -717,13 +718,13 @@
             let tAnt = document.getElementById('tipoAntiadherente').value;
             let bAnt = document.getElementById('badge-antiadherente');
             if (um >= 40) {
-                bAnt.innerText = `${um} µm - Durabilidad Alta / Uso Profesional`;
+                bAnt.innerText = `${um} micras - Durabilidad Alta / Uso Profesional`;
                 bAnt.style.backgroundColor = "var(--status-green)";
             } else if (um >= 25) {
-                bAnt.innerText = `${um} µm - Grosor Estándar Doméstico`;
+                bAnt.innerText = `${um} micras - Grosor Estándar Doméstico`;
                 bAnt.style.backgroundColor = "var(--accent-blue)";
             } else if (um > 0) {
-                bAnt.innerText = `${um} µm - Capa Delgada / Cuidado Moderado`;
+                bAnt.innerText = `${um} micras - Capa Delgada / Cuidado Moderado`;
                 bAnt.style.backgroundColor = "var(--status-yellow)";
             } else {
                 bAnt.innerText = "Sin Medición";
@@ -773,7 +774,7 @@
             document.getElementById('res-inercia').innerText = t3C ? `C: ${t3C}°C | P1: ${t3P1||'-'} | P2: ${t3P2||'-'} | P3: ${t3P3||'-'} | P4: ${t3P4||'-'}` : '-';
             document.getElementById('res-boil').innerText = pBurb;
 
-            document.getElementById('res-coating').innerText = `${tAnt} (${um > 0 ? um + ' µm' : 'Sin medir'})`;
+            document.getElementById('res-coating').innerText = `${tAnt} (${um > 0 ? um + ' micras' : 'Sin medir'})`;
             document.getElementById('res-cap-teorica').innerText = capTeoricaL > 0 ? capTeoricaL.toFixed(2) + " L" : "-";
             document.getElementById('res-pct-util').innerText = pctU > 0 ? pctU.toFixed(1) + "%" : "-";
             document.getElementById('res-pct-ind').innerText = pctI > 0 ? pctI.toFixed(1) + "%" : "-";
@@ -926,7 +927,7 @@
                 ["Temp. 3 min (Punto 3)", document.getElementById('t3_p3').value],
                 ["Temp. 3 min (Punto 4)", document.getElementById('t3_p4').value],
                 ["Patrón de Burbujas", document.getElementById('patronBurbujas').value],
-                ["Antiadherente (µm)", document.getElementById('espesorCapa').value],
+                ["Antiadherente (micras)", document.getElementById('espesorCapa').value],
                 ["Puntuación Final", document.getElementById('puntuacion-global').innerText],
                 ["Observaciones", document.getElementById('observaciones').value]
             ];
