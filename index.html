@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Auditoría Técnica de Menaje v9.3</title>
+    <title>Auditoría Técnica de Menaje v9.4</title>
     <!-- Librería para exportación nativa a Excel (.xlsx) sin backend -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
@@ -74,7 +74,7 @@
 </head>
 <body>
 
-    <div class="header-title">AUDITORÍA TÉCNICA DE MENAJE v9.3</div>
+    <div class="header-title">AUDITORÍA TÉCNICA DE MENAJE v9.4</div>
 
     <!-- 1. IDENTIFICACIÓN DE LA PIEZA -->
     <div class="card">
@@ -133,9 +133,11 @@
                 <select id="material" onchange="calcularMetrologia()">
                     <option value="Alum. Prensado">Aluminio Prensado</option>
                     <option value="Alum. Forjado">Aluminio Forjado</option>
-                    <option value="Alum. Fundido">Aluminio Fundido</option>
+                    <option value="Alum. Fundido">Aluminio Fundido (Die-cast)</option>
                     <option value="Inox (Fondo Difusor)">Acero Inox (Fondo Encapsulado)</option>
-                    <option value="Inox (Multicapa/Tri-Ply)">Acero Inox (Multicapa/Tri-Ply)</option>
+                    <option value="Inox (Multicapa 3 Capas)">Acero Inox (Multicapa Tri-Ply - 3 Capas)</option>
+                    <option value="Inox (Multicapa 5 Capas)">Acero Inox (Multicapa - 5 Capas)</option>
+                    <option value="Inox (Multicapa 7 Capas)">Acero Inox (Multicapa - 7 Capas)</option>
                     <option value="Hierro Fundido">Hierro Fundido / Cast Iron</option>
                     <option value="Acero Carbono">Acero al Carbono</option>
                 </select>
@@ -375,25 +377,25 @@
         <div class="grid-3">
             <div class="form-group">
                 <label>Centro (°C)</label>
-                <input type="number" id="tempCentro150" step="0.1" value="150" oninput="calcularMetrologia()">
+                <input type="number" id="tempCentro150" step="0.1" placeholder="Ej: 150" oninput="calcularMetrologia()">
             </div>
             <div class="form-group">
                 <label>Punto 1 (Norte) (°C)</label>
-                <input type="number" id="tempP1" step="0.1" value="150" oninput="calcularMetrologia()">
+                <input type="number" id="tempP1" step="0.1" placeholder="Ej: 150" oninput="calcularMetrologia()">
             </div>
             <div class="form-group">
                 <label>Punto 2 (Sur) (°C)</label>
-                <input type="number" id="tempP2" step="0.1" value="150" oninput="calcularMetrologia()">
+                <input type="number" id="tempP2" step="0.1" placeholder="Ej: 150" oninput="calcularMetrologia()">
             </div>
         </div>
         <div class="grid-2">
             <div class="form-group">
                 <label>Punto 3 (Este) (°C)</label>
-                <input type="number" id="tempP3" step="0.1" value="150" oninput="calcularMetrologia()">
+                <input type="number" id="tempP3" step="0.1" placeholder="Ej: 150" oninput="calcularMetrologia()">
             </div>
             <div class="form-group">
                 <label>Punto 4 (Oeste) (°C)</label>
-                <input type="number" id="tempP4" step="0.1" value="150" oninput="calcularMetrologia()">
+                <input type="number" id="tempP4" step="0.1" placeholder="Ej: 150" oninput="calcularMetrologia()">
             </div>
         </div>
 
@@ -426,6 +428,7 @@
         <div class="form-group" style="margin-top:10px;">
             <label>Patrón de Burbujas en Ebullición (Boil Test)</label>
             <select id="patronBurbujas" onchange="calcularMetrologia()">
+                <option value="">-- Sin seleccionar --</option>
                 <option value="100% Uniforme">100% Uniforme en toda la base</option>
                 <option value="Centro Concentrado">Centro Concentrado (Efecto Anillo)</option>
                 <option value="Burbujeo Irregular">Irregular / Puntos fríos visibles</option>
@@ -678,15 +681,35 @@
                         bParedEst.style.backgroundColor = "var(--status-green)";
                         txtComentarioBorde.innerText = "Pieza extremadamente maciza y pesada.";
                     }
-                } else if (mat === "Inox (Multicapa/Tri-Ply)") {
+                } else if (mat === "Inox (Multicapa 3 Capas)") {
                     if (gPared >= 2.0) {
-                        bParedEst.innerText = "Multicapa Robusta / Excelente";
+                        bParedEst.innerText = "Tri-Ply 3 Capas Robusta / Óptima";
                         bParedEst.style.backgroundColor = "var(--status-green)";
-                        txtComentarioBorde.innerText = "Gran conductividad en todo el cuerpo (paredes y base unificadas).";
+                        txtComentarioBorde.innerText = "Buen grosor en estructura sándwich acero-aluminio-acero.";
                     } else {
-                        bParedEst.innerText = "Multicapa Fina";
+                        bParedEst.innerText = "Tri-Ply 3 Capas Fina";
                         bParedEst.style.backgroundColor = "var(--status-yellow)";
                         txtComentarioBorde.innerText = "Espesor justo en paredes para una estructura multicapa.";
+                    }
+                } else if (mat === "Inox (Multicapa 5 Capas)") {
+                    if (gPared >= 2.3) {
+                        bParedEst.innerText = "Multicapa 5 Capas Profesional";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Excelente distribución lateral del calor con múltiples capas técnicas.";
+                    } else {
+                        bParedEst.innerText = "Multicapa 5 Capas Estándar";
+                        bParedEst.style.backgroundColor = "var(--accent-blue)";
+                        txtComentarioBorde.innerText = "Estructura multicapa avanzada.";
+                    }
+                } else if (mat === "Inox (Multicapa 7 Capas)") {
+                    if (gPared >= 2.5) {
+                        bParedEst.innerText = "Multicapa Máxima (7 Capas) / Élite";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Máxima complejidad técnica y conductividad integral en todo el cuerpo.";
+                    } else {
+                        bParedEst.innerText = "Multicapa 7 Capas";
+                        bParedEst.style.backgroundColor = "var(--accent-blue)";
+                        txtComentarioBorde.innerText = "Estructura de alta gama.";
                     }
                 } else if (mat === "Inox (Fondo Difusor)") {
                     if (gPared >= 0.8) {
@@ -853,7 +876,7 @@
             
             document.getElementById('res-temp-150').innerText = c150 ? `C: ${c150}°C | P1: ${p1||'-'} | P2: ${p2||'-'} | P3: ${p3||'-'} | P4: ${p4||'-'}` : '-';
             document.getElementById('res-inercia').innerText = t3C ? `C: ${t3C}°C | P1: ${t3P1||'-'} | P2: ${t3P2||'-'} | P3: ${t3P3||'-'} | P4: ${t3P4||'-'}` : '-';
-            document.getElementById('res-boil').innerText = pBurb;
+            document.getElementById('res-boil').innerText = pBurb || '-';
 
             document.getElementById('res-coating').innerText = `${tAnt} (${um > 0 ? um + ' micras' : 'Sin medir'})`;
             document.getElementById('res-cap-teorica').innerText = capTeoricaL > 0 ? capTeoricaL.toFixed(2) + " L" : "-";
@@ -861,7 +884,7 @@
             document.getElementById('res-pct-ind').innerText = pctI > 0 ? pctI.toFixed(1) + "%" : "-";
 
             renderSVG(dSup, bReal, altoIntCm, capTeoricaL, cReal);
-            calcularPuntuacionGlobal();
+            calcularPuntuacionGlobalEstricta();
         }
 
         function renderSVGBorde() {
@@ -880,7 +903,6 @@
                     <path d="M 130 80 L 130 35 L 170 35" fill="none" stroke="#38bdf8" stroke-width="12" stroke-linecap="square" stroke-linejoin="miter"/>
                     <text x="150" y="95" fill="#94a3b8" font-size="10" text-anchor="middle">Borde Pestaña / Doblado</text>`;
             } else if (tipo === 'macizo') {
-                // NUEVA GEOMETRÍA: Borde recrecido/macizo con perfil cuadrado y labio ensanchado en "P"
                 html = lineaBase + `
                     <path d="M 136 80 L 136 38 L 130 38 L 130 24 L 170 24 L 170 80 Z" fill="#38bdf8" stroke="#38bdf8" stroke-width="1"/>
                     <text x="150" y="95" fill="#94a3b8" font-size="10" text-anchor="middle">Borde Recrecido / Macizo</text>`;
@@ -946,30 +968,100 @@
             svg.innerHTML = html;
         }
 
-        function calcularPuntuacionGlobal() {
-            let score = 5.0;
+        // NUEVA FÓRMULA DE PUNTUACIÓN ESTRICTA Y MULTICRITERIO
+        function calcularPuntuacionGlobalEstricta() {
+            let mat = document.getElementById('material').value;
+            let gPared = parseFloat(document.getElementById('grosor-pared').value) || 0;
             let alturaExtMm = parseFloat(document.getElementById('alturaExtMm').value) || 0;
             let lecturaVarilla = parseFloat(document.getElementById('mint').value) || 0;
-            let fondo = Math.abs(lecturaVarilla - alturaExtMm);
-
-            if (fondo >= 5.0) score += 2.0;
-            else if (fondo >= 3.0) score += 1.0;
-
+            let fondoMm = Math.abs(lecturaVarilla - alturaExtMm);
+            
+            let t3C = parseFloat(document.getElementById('t3_centro').value) || 0;
+            let t3P1 = parseFloat(document.getElementById('t3_p1').value) || 0;
+            let t3P2 = parseFloat(document.getElementById('t3_p2').value) || 0;
+            let t3P3 = parseFloat(document.getElementById('t3_p3').value) || 0;
+            let t3P4 = parseFloat(document.getElementById('t3_p4').value) || 0;
+            let pBurb = document.getElementById('patronBurbujas').value;
             let um = parseFloat(document.getElementById('espesorCapa').value) || 0;
-            if (um >= 40) score += 1.5;
-            else if (um >= 25) score += 0.8;
-
             let tDisco = document.getElementById('tipoDiscoFondo').value;
-            if (tDisco === "Full Metal 100%") score += 1.5;
-            else if (tDisco === "Full Induction") score += 1.0;
 
-            score = Math.min(10, Math.max(1, score));
-            document.getElementById('puntuacion-global').innerText = score.toFixed(1) + " / 10";
+            // 1. BLOQUE ESTRUCTURAL Y DE MATERIAL (Base sobre 3.5 puntos)
+            let scoreEstructural = 2.0; // Base neutra
+            if (mat === "Alum. Prensado") {
+                if (gPared >= 2.2) scoreEstructural = 3.5;
+                else if (gPared >= 1.8) scoreEstructural = 2.5;
+                else scoreEstructural = 1.5;
+            } else if (mat === "Alum. Forjado") {
+                if (gPared >= 3.5) scoreEstructural = 3.5;
+                else if (gPared >= 3.0) scoreEstructural = 3.0;
+                else scoreEstructural = 2.0;
+            } else if (mat === "Alum. Fundido") {
+                if (gPared >= 5.0) scoreEstructural = 3.5;
+                else if (gPared >= 4.0) scoreEstructural = 3.0;
+                else scoreEstructural = 1.5;
+            } else if (mat.includes("Multicapa")) {
+                let capasNum = mat.includes("7") ? 7 : (mat.includes("5") ? 5 : 3);
+                if (gPared >= (capasNum === 7 ? 2.6 : (capasNum === 5 ? 2.3 : 2.0))) scoreEstructural = 3.5;
+                else scoreEstructural = 2.5;
+            } else if (mat === "Hierro Fundido") {
+                if (gPared >= 4.0) scoreEstructural = 3.5;
+                else scoreEstructural = 2.0;
+            } else if (mat === "Acero Carbono") {
+                if (gPared >= 2.5) scoreEstructural = 3.5;
+                else scoreEstructural = 2.5;
+            } else {
+                if (fondoMm >= 4.0) scoreEstructural = 3.0;
+                else scoreEstructural = 2.0;
+            }
+
+            // 2. BLOQUE DE ENSAYOS TÉRMICOS (Base sobre 4.0 puntos)
+            // Si no se han metido los datos de los 3 minutos, este bloque aporta 0 para no inflar artificialmente la nota.
+            let scoreTermico = 0;
+            let ensayosCompletos = (t3C > 0 && t3P1 > 0 && t3P2 > 0 && t3P3 > 0 && t3P4 > 0 && pBurb !== "");
+            
+            if (ensayosCompletos) {
+                let periferiaT3 = [t3P1, t3P2, t3P3, t3P4];
+                let t3Spread = Math.max(...periferiaT3) - Math.min(...periferiaT3);
+                
+                if (t3Spread <= 5 && pBurb === "100% Uniforme") {
+                    scoreTermico = 4.0;
+                } else if (t3Spread <= 10 && pBurb !== "Burbujeo Irregular") {
+                    scoreTermico = 3.0;
+                } else {
+                    scoreTermico = 1.5; // Penalización por reparto irregular
+                }
+            } else {
+                scoreTermico = 1.2; // Puntuación neutra/pendiente de ensayo para evitar que la nota parezca final sin testear
+            }
+
+            // 3. BLOQUE DE RENDIMIENTO Y COATING (Base sobre 2.5 puntos)
+            let scoreRendimiento = 1.0;
+            if (tDisco === "Full Metal 100%") scoreRendimiento += 1.0;
+            else if (tDisco === "Full Induction") scoreRendimiento += 0.7;
+            else scoreRendimiento += 0.3;
+
+            if (um >= 40) scoreRendimiento += 0.5;
+            else if (um >= 25) scoreRendimiento += 0.3;
+
+            let scoreTotal = scoreEstructural + scoreTermico + scoreRendimiento;
+            scoreTotal = Math.min(10, Math.max(1, scoreTotal));
+
+            document.getElementById('puntuacion-global').innerText = scoreTotal.toFixed(1) + " / 10";
 
             let cat = document.getElementById('categoria-global');
-            if (score >= 8.5) cat.innerText = "CALIDAD EXCELENTE / PROFESIONAL";
-            else if (score >= 6.5) cat.innerText = "BUENA CALIDAD DOMÉSTICA";
-            else cat.innerText = "GAMA DE ENTRADA / BÁSICA";
+            if (!ensayosCompletos) {
+                cat.innerText = "AUDITORÍA EN PROCESO (FALTAN ENSAYOS TÉRMICOS)";
+                cat.style.color = "var(--status-yellow)";
+            } else if (scoreTotal >= 8.5) {
+                cat.innerText = "CALIDAD EXCELENTE / PROFESIONAL";
+                cat.style.color = "var(--status-green)";
+            } else if (scoreTotal >= 6.5) {
+                cat.innerText = "BUENA CALIDAD DOMÉSTICA";
+                cat.style.color = "#38bdf8";
+            } else {
+                cat.innerText = "GAMA DE ENTRADA / LIMITADA";
+                cat.style.color = "var(--status-red)";
+            }
         }
 
         function exportarExcel() {
