@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Auditoría Técnica de Menaje v9.2</title>
+    <title>Auditoría Técnica de Menaje v9.3</title>
     <!-- Librería para exportación nativa a Excel (.xlsx) sin backend -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
@@ -74,7 +74,7 @@
 </head>
 <body>
 
-    <div class="header-title">AUDITORÍA TÉCNICA DE MENAJE v9.2</div>
+    <div class="header-title">AUDITORÍA TÉCNICA DE MENAJE v9.3</div>
 
     <!-- 1. IDENTIFICACIÓN DE LA PIEZA -->
     <div class="card">
@@ -208,7 +208,7 @@
         </div>
 
         <div class="metric-display" style="margin-bottom: 12px;">
-            <label>Evaluación Estructural del Borde</label>
+            <label>Evaluación Estructural del Borde / Cuerpo</label>
             <div id="resultado-pared" class="thickness-value">0.0 mm</div>
             <div id="badge-pared" class="status-badge">Sin Medición</div>
             <div id="comentario-borde" style="font-size:0.78rem; color:#94a3b8; margin-top:6px; font-style:italic;">-</div>
@@ -629,18 +629,99 @@
 
             let gPared = parseFloat(document.getElementById('grosor-pared').value) || 0;
             let tBorde = document.getElementById('tipo-borde').value;
+            let bParedEst = document.getElementById('badge-pared');
+            let txtComentarioBorde = document.getElementById('comentario-borde');
+
             if (gPared > 0) {
                 document.getElementById('resultado-pared').innerText = gPared.toFixed(2) + " mm";
-                let bParedEst = document.getElementById('badge-pared');
-                if (gPared >= 3.0) {
-                    bParedEst.innerText = "Estructura Robusta / Indeformable";
-                    bParedEst.style.backgroundColor = "var(--status-green)";
-                } else if (gPared >= 2.0) {
-                    bParedEst.innerText = "Resistencia Media";
-                    bParedEst.style.backgroundColor = "var(--accent-blue)";
-                } else {
-                    bParedEst.innerText = "Pared Fina / Sensible";
-                    bParedEst.style.backgroundColor = "var(--status-yellow)";
+                
+                // EVALUACIÓN ESPECÍFICA SEGÚN MATERIAL SELECCIONADO
+                if (mat === "Alum. Prensado") {
+                    if (gPared >= 2.0 && gPared <= 2.5) {
+                        bParedEst.innerText = "Prensado Estándar / Aceptable";
+                        bParedEst.style.backgroundColor = "var(--accent-blue)";
+                        txtComentarioBorde.innerText = "Espesor correcto para gama económica/media de aluminio prensado.";
+                    } else if (gPared < 2.0) {
+                        bParedEst.innerText = "Prensado Muy Fino / Ligero";
+                        bParedEst.style.backgroundColor = "var(--status-yellow)";
+                        txtComentarioBorde.innerText = "Alerta: Espesor bajo, alta propensión a deformación por choque térmico.";
+                    } else {
+                        bParedEst.innerText = "Prensado Grueso (Sobrestándar)";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Excelente grosor para ser una pieza de aluminio prensado.";
+                    }
+                } else if (mat === "Alum. Forjado") {
+                    if (gPared >= 3.0 && gPared <= 4.0) {
+                        bParedEst.innerText = "Forjado Óptimo / Equilibrado";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Cumple perfectamente con el estándar de solidez y reparto en aluminio forjado.";
+                    } else if (gPared < 3.0) {
+                        bParedEst.innerText = "Forjado Justo / Delgado";
+                        bParedEst.style.backgroundColor = "var(--status-yellow)";
+                        txtComentarioBorde.innerText = "Atención: Por debajo del umbral recomendado de 3 mm para forjado.";
+                    } else {
+                        bParedEst.innerText = "Forjado Pesado / Robusta";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Espesor superior que aporta gran inercia térmica.";
+                    }
+                } else if (mat === "Alum. Fundido") {
+                    if (gPared >= 4.0 && gPared <= 6.0) {
+                        bParedEst.innerText = "Fundición Real / Alta Inercia";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Estructura maciza óptima con gran retención de calor.";
+                    } else if (gPared < 4.0) {
+                        bParedEst.innerText = "Fundición Fina / No Estándar";
+                        bParedEst.style.backgroundColor = "var(--status-red)";
+                        txtComentarioBorde.innerText = "Alerta: El espesor es bajo para una fundición real (die-cast).";
+                    } else {
+                        bParedEst.innerText = "Fundición Extraordinaria";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Pieza extremadamente maciza y pesada.";
+                    }
+                } else if (mat === "Inox (Multicapa/Tri-Ply)") {
+                    if (gPared >= 2.0) {
+                        bParedEst.innerText = "Multicapa Robusta / Excelente";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Gran conductividad en todo el cuerpo (paredes y base unificadas).";
+                    } else {
+                        bParedEst.innerText = "Multicapa Fina";
+                        bParedEst.style.backgroundColor = "var(--status-yellow)";
+                        txtComentarioBorde.innerText = "Espesor justo en paredes para una estructura multicapa.";
+                    }
+                } else if (mat === "Inox (Fondo Difusor)") {
+                    if (gPared >= 0.8) {
+                        bParedEst.innerText = "Pared Inox Correcta (Resistente)";
+                        bParedEst.style.backgroundColor = "var(--accent-blue)";
+                        txtComentarioBorde.innerText = "Paredes de acero idóneas para evitar excesos de peso (la inercia la da el fondo).";
+                    } else {
+                        bParedEst.innerText = "Pared Inox Muy Fina";
+                        bParedEst.style.backgroundColor = "var(--status-yellow)";
+                        txtComentarioBorde.innerText = "Estructura ligera propensa a flexión lateral.";
+                    }
+                } else if (mat === "Hierro Fundido") {
+                    if (gPared >= 3.5) {
+                        bParedEst.innerText = "Hierro Fundido Óptimo";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Inercia térmica brutal y durabilidad generacional.";
+                    } else {
+                        bParedEst.innerText = "Hierro Fundido Deficiente";
+                        bParedEst.style.backgroundColor = "var(--status-red)";
+                        txtComentarioBorde.innerText = "Alerta: Demasiado delgado para considerarse hierro fundido de calidad.";
+                    }
+                } else if (mat === "Acero Carbono") {
+                    if (gPared >= 2.0 && gPared <= 3.0) {
+                        bParedEst.innerText = "Acero al Carbono Profesional";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Excelente equilibrio entre ligereza de manejo y resistencia a la deformación.";
+                    } else if (gPared < 2.0) {
+                        bParedEst.innerText = "Chapa de Acero Muy Fina";
+                        bParedEst.style.backgroundColor = "var(--status-yellow)";
+                        txtComentarioBorde.innerText = "Atención: Tiende a alabearse con facilidad ante calor directo fuerte.";
+                    } else {
+                        bParedEst.innerText = "Acero al Carbono Pesado";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Chapa gruesa de alta durabilidad profesional.";
+                    }
                 }
             }
 
@@ -799,8 +880,9 @@
                     <path d="M 130 80 L 130 35 L 170 35" fill="none" stroke="#38bdf8" stroke-width="12" stroke-linecap="square" stroke-linejoin="miter"/>
                     <text x="150" y="95" fill="#94a3b8" font-size="10" text-anchor="middle">Borde Pestaña / Doblado</text>`;
             } else if (tipo === 'macizo') {
+                // NUEVA GEOMETRÍA: Borde recrecido/macizo con perfil cuadrado y labio ensanchado en "P"
                 html = lineaBase + `
-                    <path d="M 138 80 L 138 42 A 12 12 0 0 1 162 42 L 162 80 Z" fill="#38bdf8" stroke="#38bdf8" stroke-width="1"/>
+                    <path d="M 136 80 L 136 38 L 130 38 L 130 24 L 170 24 L 170 80 Z" fill="#38bdf8" stroke="#38bdf8" stroke-width="1"/>
                     <text x="150" y="95" fill="#94a3b8" font-size="10" text-anchor="middle">Borde Recrecido / Macizo</text>`;
             } else {
                 html = lineaBase + `
