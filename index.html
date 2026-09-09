@@ -320,12 +320,12 @@
         <h2>5. Montaje, Balance y Ergonomía</h2>
         
         <div class="form-group">
-            <label>Fijación del Mango/Asas</label>
+            <label>Fijación del Mango/Asas (Selección Múltiple)</label>
             <div class="btn-grid-4" id="group-fijacion">
-                <button class="btn-opt" onclick="setOpt('fijacion', 'Remachado', this)">Remachado</button>
-                <button class="btn-opt" onclick="setOpt('fijacion', 'Soldado', this)">Soldado</button>
-                <button class="btn-opt" onclick="setOpt('fijacion', 'Atornillado', this)">Atornillado</button>
-                <button class="btn-opt" onclick="setOpt('fijacion', 'Extraíble', this)">Extraíble</button>
+                <button class="btn-opt" onclick="toggleMultiOpt('fijacion', 'Remachado', this)">Remachado</button>
+                <button class="btn-opt" onclick="toggleMultiOpt('fijacion', 'Soldado', this)">Soldado</button>
+                <button class="btn-opt" onclick="toggleMultiOpt('fijacion', 'Atornillado', this)">Atornillado</button>
+                <button class="btn-opt" onclick="toggleMultiOpt('fijacion', 'Extraíble', this)">Extraíble</button>
             </div>
         </div>
 
@@ -357,12 +357,33 @@
             </div>
         </div>
 
+        <!-- NUEVA SECCIÓN DE ERGONOMÍA Y CONFORT -->
+        <div class="form-group" style="margin-top: 10px;">
+            <label>Ergonomía, Confort y Agarre</label>
+            <div class="btn-grid-4" id="group-ergonomia">
+                <button class="btn-opt green" onclick="toggleMultiOpt('ergonomia', 'Cómodo', this)">Cómodo / Ergonómico</button>
+                <button class="btn-opt red" onclick="toggleMultiOpt('ergonomia', 'Aristas', this)">Presencia de Aristas</button>
+                <button class="btn-opt red" onclick="toggleMultiOpt('ergonomia', 'Molesta Agarre', this)">Molesta al Agarre</button>
+                <button class="btn-opt green" onclick="toggleMultiOpt('ergonomia', 'Tacton Suave', this)">Acabado Tacto Suave</button>
+            </div>
+        </div>
+
         <div class="form-group">
             <label>Térmica del Mango</label>
             <div class="btn-grid" id="group-termica">
                 <button class="btn-opt green" onclick="setOpt('termica', 'Aislado (Frío)', this)">Frío / Seguro</button>
                 <button class="btn-opt red" onclick="setOpt('termica', 'Quema', this)">Quema (Peligro)</button>
             </div>
+        </div>
+
+        <!-- OBSERVACIÓN TÉRMICA ESPECÍFICA PARA MANGOS DESMONTABLES -->
+        <div class="form-group" style="margin-top: 8px;">
+            <label>Comportamiento Térmico en Mecanismos / Botones Desmontables</label>
+            <select id="termicaMecanismo" onchange="calcularMetrologia()">
+                <option value="No aplica / Fijo">No aplica (Mango fijo o sin mecanismo)</option>
+                <option value="Mecanismo frío">Mecanismo de liberación totalmente frío</option>
+                <option value="Mecanismo se calienta">Alerta: Botones/mecanismos se calientan aunque el cuerpo esté frío</option>
+            </select>
         </div>
     </div>
 
@@ -503,7 +524,7 @@
                         <td id="res-fondo-mag">-</td>
                     </tr>
                     <tr>
-                        <td><strong>Balance Mango</strong></td>
+                        <td><strong>Balance y Ergonomía del Mango</strong></td>
                         <td id="res-balance">-</td>
                     </tr>
                     <tr>
@@ -550,9 +571,10 @@
 
     <script>
         let opcionesSeleccionadas = {
-            fijacion: '',
+            fijacion: [],
             materialMango: '',
             vertido: '',
+            ergonomia: [],
             termica: ''
         };
 
@@ -566,6 +588,22 @@
             let botones = contenedor.querySelectorAll('.btn-opt');
             botones.forEach(b => b.classList.remove('active'));
             elemento.classList.add('active');
+            calcularMetrologia();
+        }
+
+        // NUEVA FUNCIÓN PARA GESTIONAR SELECCIÓN MÚLTIPLE
+        function toggleMultiOpt(grupo, valor, elemento) {
+            if (!Array.isArray(opcionesSeleccionadas[grupo])) {
+                opcionesSeleccionadas[grupo] = [];
+            }
+            let index = opcionesSeleccionadas[grupo].indexOf(valor);
+            if (index > -1) {
+                opcionesSeleccionadas[grupo].splice(index, 1);
+                elemento.classList.remove('active');
+            } else {
+                opcionesSeleccionadas[grupo].push(valor);
+                elemento.classList.add('active');
+            }
             calcularMetrologia();
         }
 
@@ -638,7 +676,6 @@
             if (gPared > 0) {
                 document.getElementById('resultado-pared').innerText = gPared.toFixed(2) + " mm";
                 
-                // EVALUACIÓN ESPECÍFICA SEGÚN MATERIAL SELECCIONADO
                 if (mat === "Alum. Prensado") {
                     if (gPared >= 2.0 && gPared <= 2.5) {
                         bParedEst.innerText = "Prensado Estándar / Aceptable";
@@ -835,7 +872,7 @@
                 bAnt.style.backgroundColor = "var(--border-color)";
             }
 
-            // Datos térmicos y cálculo de reparto automático
+            // Datos térmicos y cálculo de reparto automático (CON LÓGICA ESTRICTA DE TOLERANCIAS)
             let c150 = document.getElementById('tempCentro150').value;
             let p1 = document.getElementById('tempP1').value;
             let p2 = document.getElementById('tempP2').value;
@@ -852,27 +889,31 @@
             let veredictoTexto = "Introduce los datos de los 3 minutos";
             if (t3C > 0 && t3P1 > 0 && t3P2 > 0 && t3P3 > 0 && t3P4 > 0) {
                 let periferiaT3 = [t3P1, t3P2, t3P3, t3P4];
-                let avgInitPeriferia = (parseFloat(p1)||150 + parseFloat(p2)||150 + parseFloat(p3)||150 + parseFloat(p4)||150) / 4;
-                let avgPeriferiaT3 = periferiaT3.reduce((a, b) => a + b, 0) / 4;
-                let dropPeriferia = avgInitPeriferia - avgPeriferiaT3;
                 let t3Spread = Math.max(...periferiaT3) - Math.min(...periferiaT3);
 
-                if (t3Spread <= 8 && dropPeriferia <= 35) {
+                // Lógica estricta corregida: Si hay >10 °C de diferencia o burbujeo irregular, cambia a moderado/irregular
+                if (t3Spread > 10 || pBurb === "Burbujeo Irregular" || pBurb === "Centro Concentrado") {
+                    veredictoTexto = "⚠️ Reparto Irregular / Puntos Descompensados: Dispersión superior a 10°C o anomalías en Boil Test.";
+                } else if (t3Spread <= 6 && pBurb === "100% Uniforme") {
                     veredictoTexto = "✅ Excelente Reparto y Retención: Distribución homogénea y gran inercia térmica.";
-                } else if (t3Spread > 15 || Math.abs(t3C - avgPeriferiaT3) > 15) {
-                    veredictoTexto = "⚠️ Reparto Irregular / Puntos Descompensados: Diferencias notables de temperatura.";
                 } else {
                     veredictoTexto = "⚡ Reparto y Retención Moderados: Comportamiento térmico estándar aceptable.";
                 }
             }
             document.getElementById('veredicto-reparto').innerText = veredictoTexto;
 
+            // Formatear selecciones múltiples para tabla resumen
+            let fijacionStr = Array.isArray(opcionesSeleccionadas.fijacion) ? opcionesSeleccionadas.fijacion.join(', ') : (opcionesSeleccionadas.fijacion || '-');
+            let ergonomiaStr = Array.isArray(opcionesSeleccionadas.ergonomia) ? opcionesSeleccionadas.ergonomia.join(', ') : '';
+            let termMecStr = document.getElementById('termicaMecanismo').value;
+            let balanceCompleto = `${document.getElementById('balanceMango').value} | Fijación: [${fijacionStr}] | Ergonomía: [${ergonomiaStr}] | Mecanismo: ${termMecStr}`;
+
             // Actualizar Tabla Resumen
             document.getElementById('res-pieza').innerText = `${tipo} ${marca} ${modelo} (${mat})`;
             document.getElementById('res-pared-borde').innerText = `${gPared > 0 ? gPared.toFixed(2) + ' mm' : '-'} / ${tBorde}`;
             document.getElementById('res-planitud').innerText = `${tConc} (${gFrio} mm)`;
             document.getElementById('res-fondo-mag').innerText = `${tDisco} (${fMag})`;
-            document.getElementById('res-balance').innerText = document.getElementById('balanceMango').value;
+            document.getElementById('res-balance').innerText = balanceCompleto;
             
             document.getElementById('res-temp-150').innerText = c150 ? `C: ${c150}°C | P1: ${p1||'-'} | P2: ${p2||'-'} | P3: ${p3||'-'} | P4: ${p4||'-'}` : '-';
             document.getElementById('res-inercia').innerText = t3C ? `C: ${t3C}°C | P1: ${t3P1||'-'} | P2: ${t3P2||'-'} | P3: ${t3P3||'-'} | P4: ${t3P4||'-'}` : '-';
@@ -968,7 +1009,6 @@
             svg.innerHTML = html;
         }
 
-        // NUEVA FÓRMULA DE PUNTUACIÓN ESTRICTA Y MULTICRITERIO
         function calcularPuntuacionGlobalEstricta() {
             let mat = document.getElementById('material').value;
             let gPared = parseFloat(document.getElementById('grosor-pared').value) || 0;
@@ -985,8 +1025,7 @@
             let um = parseFloat(document.getElementById('espesorCapa').value) || 0;
             let tDisco = document.getElementById('tipoDiscoFondo').value;
 
-            // 1. BLOQUE ESTRUCTURAL Y DE MATERIAL (Base sobre 3.5 puntos)
-            let scoreEstructural = 2.0; // Base neutra
+            let scoreEstructural = 2.0;
             if (mat === "Alum. Prensado") {
                 if (gPared >= 2.2) scoreEstructural = 3.5;
                 else if (gPared >= 1.8) scoreEstructural = 2.5;
@@ -1014,8 +1053,6 @@
                 else scoreEstructural = 2.0;
             }
 
-            // 2. BLOQUE DE ENSAYOS TÉRMICOS (Base sobre 4.0 puntos)
-            // Si no se han metido los datos de los 3 minutos, este bloque aporta 0 para no inflar artificialmente la nota.
             let scoreTermico = 0;
             let ensayosCompletos = (t3C > 0 && t3P1 > 0 && t3P2 > 0 && t3P3 > 0 && t3P4 > 0 && pBurb !== "");
             
@@ -1028,13 +1065,12 @@
                 } else if (t3Spread <= 10 && pBurb !== "Burbujeo Irregular") {
                     scoreTermico = 3.0;
                 } else {
-                    scoreTermico = 1.5; // Penalización por reparto irregular
+                    scoreTermico = 1.5;
                 }
             } else {
-                scoreTermico = 1.2; // Puntuación neutra/pendiente de ensayo para evitar que la nota parezca final sin testear
+                scoreTermico = 1.2;
             }
 
-            // 3. BLOQUE DE RENDIMIENTO Y COATING (Base sobre 2.5 puntos)
             let scoreRendimiento = 1.0;
             if (tDisco === "Full Metal 100%") scoreRendimiento += 1.0;
             else if (tDisco === "Full Induction") scoreRendimiento += 0.7;
@@ -1071,6 +1107,9 @@
             let alturaExtTotalCm = parseFloat(document.getElementById('alturaTotal').value) || 0;
             let altoIntCm = alturaExtTotalCm > 0 ? alturaExtTotalCm - (grosorFondo / 10) : 0;
 
+            let fijacionStr = Array.isArray(opcionesSeleccionadas.fijacion) ? opcionesSeleccionadas.fijacion.join(', ') : '';
+            let ergonomiaStr = Array.isArray(opcionesSeleccionadas.ergonomia) ? opcionesSeleccionadas.ergonomia.join(', ') : '';
+
             let data = [
                 ["CAMPO", "VALOR"],
                 ["Marca", document.getElementById('marca').value],
@@ -1089,7 +1128,10 @@
                 ["% Cobertura Inducción", document.getElementById('pctInduccion').value],
                 ["Planitud / Galgas", document.getElementById('galgaFrio').value],
                 ["Tipo Disco Inducción", document.getElementById('tipoDiscoFondo').value],
+                ["Fijación Mango (Múltiple)", fijacionStr],
                 ["Balance Mango", document.getElementById('balanceMango').value],
+                ["Ergonomía (Múltiple)", ergonomiaStr],
+                ["Térmica Mecanismo Desmontable", document.getElementById('termicaMecanismo').value],
                 ["Temp. 150°C (Centro)", document.getElementById('tempCentro150').value],
                 ["Temp. 150°C (Punto 1)", document.getElementById('tempP1').value],
                 ["Temp. 150°C (Punto 2)", document.getElementById('tempP2').value],
@@ -1118,7 +1160,7 @@
             txt += `Grosor Pared/Borde: ${document.getElementById('res-pared-borde').innerText}\n`;
             txt += `Planitud/Concavidad: ${document.getElementById('res-planitud').innerText}\n`;
             txt += `Fondo Magnético: ${document.getElementById('res-fondo-mag').innerText}\n`;
-            txt += `Balance Mango: ${document.getElementById('res-balance').innerText}\n`;
+            txt += `Balance y Mango: ${document.getElementById('res-balance').innerText}\n`;
             txt += `Temperaturas 150°C: ${document.getElementById('res-temp-150').innerText}\n`;
             txt += `Inercia Térmica (3 min): ${document.getElementById('res-inercia').innerText}\n`;
             txt += `Boil Test (Burbujas): ${document.getElementById('res-boil').innerText}\n`;
@@ -1159,6 +1201,20 @@
                     });
                     if (datos.opcionesSeleccionadas) {
                         opcionesSeleccionadas = datos.opcionesSeleccionadas;
+                        // Restaurar estados activos de botones múltiples
+                        Object.keys(opcionesSeleccionadas).forEach(grupo => {
+                            if (Array.isArray(opcionesSeleccionadas[grupo])) {
+                                let contenedor = document.getElementById('group-' + grupo);
+                                if (contenedor) {
+                                    let botones = contenedor.querySelectorAll('.btn-opt');
+                                    botones.forEach(b => {
+                                        if (opcionesSeleccionadas[grupo].includes(b.innerText.trim())) {
+                                            b.classList.add('active');
+                                        }
+                                    });
+                                }
+                            }
+                        });
                     }
                     calcularMetrologia();
                 } catch(e) {
@@ -1173,7 +1229,7 @@
                 document.querySelectorAll('textarea').forEach(i => i.value = '');
                 document.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
                 document.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('active'));
-                opcionesSeleccionadas = { fijacion: '', materialMango: '', vertido: '', termica: '' };
+                opcionesSeleccionadas = { fijacion: [], materialMango: '', vertido: '', ergonomia: [], termica: '' };
                 localStorage.removeItem('auditoria_menaje_datos');
                 calcularMetrologia();
             }
