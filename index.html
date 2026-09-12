@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Auditoría Técnica de Menaje v9.4</title>
+    <title>Auditoría Técnica de Menaje v9.5</title>
     <!-- Librería para exportación nativa a Excel (.xlsx) sin backend -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
@@ -74,7 +74,7 @@
 </head>
 <body>
 
-    <div class="header-title">AUDITORÍA TÉCNICA DE MENAJE v9.4</div>
+    <div class="header-title">AUDITORÍA TÉCNICA DE MENAJE v9.5</div>
 
     <!-- 1. IDENTIFICACIÓN DE LA PIEZA -->
     <div class="card">
@@ -97,7 +97,7 @@
             </div>
             <div class="form-group">
                 <label>Peso (gramos)</label>
-                <input type="number" id="peso" placeholder="Ej. 850" step="5" oninput="calcularMetrologia()">
+                <input type="number" id="peso" placeholder="Ej. 1035" step="5" oninput="calcularMetrologia()">
             </div>
         </div>
 
@@ -251,7 +251,20 @@
         </div>
 
         <div id="diagnostico-geometria-box" class="diag-box" style="display:none;">
-            <strong>Diagnóstico de Cocinado:</strong> <span id="texto-diagnostico-geometria">-</span>
+            <strong>Diagnóstico de Geometría:</strong> <span id="texto-diagnostico-geometria">-</span>
+        </div>
+
+        <!-- BLOQUE INTEGRADO: DIAGNÓSTICO DE COCINADO AVANZADO -->
+        <div id="diagnostico-cocinado-card" class="card" style="background:#0f172a; margin-top:12px; display:none; border-color:#38bdf8;">
+            <h3 style="font-size:0.95rem; color:#38bdf8; margin-bottom:8px; text-transform:uppercase; border-bottom:1px solid var(--border-color); padding-bottom:4px;">Diagnóstico de Cocinado (Veredicto Técnico)</h3>
+            <div style="margin-bottom: 8px;">
+                <label style="font-size:0.75rem; color:#94a3b8;">Vocación de Uso Recomendado:</label>
+                <div id="diag-vocacion-uso" style="font-size: 0.9rem; font-weight: bold; color: #34d399; margin-top: 2px;">-</div>
+            </div>
+            <div>
+                <label style="font-size:0.75rem; color:#94a3b8;">Comportamiento Térmico y Ergonómico:</label>
+                <div id="diag-comportamiento-termico" style="font-size: 0.85rem; color: #cbd5e1; margin-top: 2px; line-height: 1.4;">-</div>
+            </div>
         </div>
 
         <div class="card" style="background:#0f172a; margin-top:10px; text-align:center;">
@@ -357,7 +370,6 @@
             </div>
         </div>
 
-        <!-- NUEVA SECCIÓN DE ERGONOMÍA Y CONFORT -->
         <div class="form-group" style="margin-top: 10px;">
             <label>Ergonomía, Confort y Agarre</label>
             <div class="btn-grid-4" id="group-ergonomia">
@@ -376,7 +388,6 @@
             </div>
         </div>
 
-        <!-- OBSERVACIÓN TÉRMICA ESPECÍFICA PARA MANGOS DESMONTABLES -->
         <div class="form-group" style="margin-top: 8px;">
             <label>Comportamiento Térmico en Mecanismos / Botones Desmontables</label>
             <select id="termicaMecanismo" onchange="calcularMetrologia()">
@@ -512,6 +523,10 @@
                         <td id="res-pieza">-</td>
                     </tr>
                     <tr>
+                        <td><strong>Peso (g) & Análisis Agilidad</strong></td>
+                        <td id="res-peso">-</td>
+                    </tr>
+                    <tr>
                         <td><strong>Grosor Pared / Borde</strong></td>
                         <td id="res-pared-borde">-</td>
                     </tr>
@@ -591,7 +606,6 @@
             calcularMetrologia();
         }
 
-        // NUEVA FUNCIÓN PARA GESTIONAR SELECCIÓN MÚLTIPLE
         function toggleMultiOpt(grupo, valor, elemento) {
             if (!Array.isArray(opcionesSeleccionadas[grupo])) {
                 opcionesSeleccionadas[grupo] = [];
@@ -613,6 +627,7 @@
             let tipo = document.getElementById('tipo').value;
             let mat = document.getElementById('material').value;
             let dSup = parseFloat(document.getElementById('diametro').value) || 0;
+            let pesoVal = parseFloat(document.getElementById('peso').value) || 0;
             let bReal = parseFloat(document.getElementById('diametroBaseReal').value) || 0;
             let dInd = parseFloat(document.getElementById('diametroInduccion').value) || 0;
             let cReal = parseFloat(document.getElementById('capReal').value) || 0;
@@ -620,6 +635,19 @@
             let alturaExtTotalCm = parseFloat(document.getElementById('alturaTotal').value) || 0;
             let lecturaVarilla = parseFloat(document.getElementById('mint').value) || 0;
             let alturaExtMm = parseFloat(document.getElementById('alturaExtMm').value) || 0;
+
+            // CLASIFICACIÓN DE PESO Y AGILIDAD (Desplazada y gestionada internamente para el veredicto y tablas)
+            let clasificacionPeso = "-";
+            if (pesoVal > 0) {
+                let limiteLiviano = dSup >= 28 ? 900 : (dSup >= 24 ? 800 : 650);
+                if (pesoVal >= 1000) {
+                    clasificacionPeso = `${pesoVal} g - Pesada / Alta Inercia (No ágil)`;
+                } else if (pesoVal >= limiteLiviano) {
+                    clasificacionPeso = `${pesoVal} g - Peso Estándar / Equilibrada`;
+                } else {
+                    clasificacionPeso = `${pesoVal} g - Ligera / Muy Ágil`;
+                }
+            }
 
             let grosorFondoMm = 0;
             if (alturaExtMm > 0 && lecturaVarilla > 0) {
@@ -830,6 +858,34 @@
                 boxDiag.style.display = "none";
             }
 
+            let cardCocinado = document.getElementById('diagnostico-cocinado-card');
+            let lblVocacion = document.getElementById('diag-vocacion-uso');
+            let lblTermico = document.getElementById('diag-comportamiento-termico');
+
+            if (gPared > 0 && grosorFondoMm > 0) {
+                cardCocinado.style.display = "block";
+
+                let vocacionTexto = "";
+                if (pesoVal >= 1000) {
+                    vocacionTexto = "Opción Estática / Alta Inercia: Pieza pesada (≥1 kg). Ideal para plancha estática, carnes, guisos y cocción lenta. **No apta para salteados ágiles** debido al esfuerzo físico requerido.";
+                } else if (pctU >= 80 || altoIntCm < 4.5) {
+                    vocacionTexto = "Opción A: Uso Principalmente Estático (Plancha, tortillas, arroces).";
+                } else {
+                    vocacionTexto = "Opción B: Apta para Salteados Ágiles (Paredes con pendiente y peso contenido).";
+                }
+                lblVocacion.innerText = vocacionTexto;
+
+                let termicoTexto = `Comportamiento térmico con paredes de ~${gPared.toFixed(1)} mm y fondo difusor de ${grosorFondoMm.toFixed(1)} mm. `;
+                if (pesoVal >= 1000) {
+                    termicoTexto += `Su peso de ${pesoVal} g le otorga una inercia térmica excelente (retiene el calor mucho tiempo tras apagar el fuego), pero penaliza claramente la agilidad de manejo.`;
+                } else {
+                    termicoTexto += `Estructura equilibrada con respuesta ágil al calor.`;
+                }
+                lblTermico.innerText = termicoTexto;
+            } else {
+                cardCocinado.style.display = "none";
+            }
+
             let gFrio = parseFloat(document.getElementById('galgaFrio').value) || 0;
             let tConc = document.getElementById('tipoConcavidad').value;
             let bPlan = document.getElementById('badge-planitud');
@@ -872,7 +928,6 @@
                 bAnt.style.backgroundColor = "var(--border-color)";
             }
 
-            // Datos térmicos y cálculo de reparto automático (CON LÓGICA ESTRICTA DE TOLERANCIAS)
             let c150 = document.getElementById('tempCentro150').value;
             let p1 = document.getElementById('tempP1').value;
             let p2 = document.getElementById('tempP2').value;
@@ -891,7 +946,6 @@
                 let periferiaT3 = [t3P1, t3P2, t3P3, t3P4];
                 let t3Spread = Math.max(...periferiaT3) - Math.min(...periferiaT3);
 
-                // Lógica estricta corregida: Si hay >10 °C de diferencia o burbujeo irregular, cambia a moderado/irregular
                 if (t3Spread > 10 || pBurb === "Burbujeo Irregular" || pBurb === "Centro Concentrado") {
                     veredictoTexto = "⚠️ Reparto Irregular / Puntos Descompensados: Dispersión superior a 10°C o anomalías en Boil Test.";
                 } else if (t3Spread <= 6 && pBurb === "100% Uniforme") {
@@ -902,14 +956,13 @@
             }
             document.getElementById('veredicto-reparto').innerText = veredictoTexto;
 
-            // Formatear selecciones múltiples para tabla resumen
             let fijacionStr = Array.isArray(opcionesSeleccionadas.fijacion) ? opcionesSeleccionadas.fijacion.join(', ') : (opcionesSeleccionadas.fijacion || '-');
             let ergonomiaStr = Array.isArray(opcionesSeleccionadas.ergonomia) ? opcionesSeleccionadas.ergonomia.join(', ') : '';
             let termMecStr = document.getElementById('termicaMecanismo').value;
             let balanceCompleto = `${document.getElementById('balanceMango').value} | Fijación: [${fijacionStr}] | Ergonomía: [${ergonomiaStr}] | Mecanismo: ${termMecStr}`;
 
-            // Actualizar Tabla Resumen
             document.getElementById('res-pieza').innerText = `${tipo} ${marca} ${modelo} (${mat})`;
+            document.getElementById('res-peso').innerText = pesoVal > 0 ? `${pesoVal} g (${clasificacionPeso})` : '-';
             document.getElementById('res-pared-borde').innerText = `${gPared > 0 ? gPared.toFixed(2) + ' mm' : '-'} / ${tBorde}`;
             document.getElementById('res-planitud').innerText = `${tConc} (${gFrio} mm)`;
             document.getElementById('res-fondo-mag').innerText = `${tDisco} (${fMag})`;
@@ -1157,6 +1210,7 @@
         function copiarInformeTexto() {
             let txt = `=== INFORME AUDITORÍA TÉCNICA DE MENAJE ===\n`;
             txt += `Pieza: ${document.getElementById('res-pieza').innerText}\n`;
+            txt += `Peso (g) & Agilidad: ${document.getElementById('res-peso').innerText}\n`;
             txt += `Grosor Pared/Borde: ${document.getElementById('res-pared-borde').innerText}\n`;
             txt += `Planitud/Concavidad: ${document.getElementById('res-planitud').innerText}\n`;
             txt += `Fondo Magnético: ${document.getElementById('res-fondo-mag').innerText}\n`;
@@ -1201,7 +1255,6 @@
                     });
                     if (datos.opcionesSeleccionadas) {
                         opcionesSeleccionadas = datos.opcionesSeleccionadas;
-                        // Restaurar estados activos de botones múltiples
                         Object.keys(opcionesSeleccionadas).forEach(grupo => {
                             if (Array.isArray(opcionesSeleccionadas[grupo])) {
                                 let contenedor = document.getElementById('group-' + grupo);
