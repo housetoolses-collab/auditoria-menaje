@@ -276,9 +276,9 @@
 
     <!-- 3. PLANITUD DE BASE Y TOLERANCIA TÉRMICA -->
     <div class="card">
-        <h2>3. Planitud de Base y Concavidad</h2>
+        <h2>3. Planitud de Base y Concavidad Térmica</h2>
         <div class="protocol-note">
-            <strong>Normativa DIN:</strong> La concavidad térmica preventiva en frío evita que la sartén baile en caliente.
+            <strong>Normativa DIN EN 12983-1:</strong> La concavidad térmica preventiva en frío evita que la sartén se vuelva convexa (abombada) al dilatarse con el calor.
         </div>
         <div class="grid-2">
             <div class="form-group">
@@ -286,7 +286,7 @@
                 <input type="number" id="galgaFrio" step="0.05" placeholder="Ej: 0.30" oninput="calcularMetrologia()">
             </div>
             <div class="form-group">
-                <label>Perfil de Deformación</label>
+                <label>Perfil de Deformación (Frío)</label>
                 <select id="tipoConcavidad" onchange="calcularMetrologia()">
                     <option value="Concavidad Correcta">Concavidad Correcta (Centro Hacia Adentro)</option>
                     <option value="Plana Absoluta">Plana Absoluta (0.0 mm)</option>
@@ -294,9 +294,33 @@
                 </select>
             </div>
         </div>
-        <div class="metric-display">
-            <label>Diagnóstico de Estabilidad en Cristal</label>
-            <div id="badge-planitud" class="status-badge">Sin Medición</div>
+
+        <div class="grid-2" style="margin-top: 6px;">
+            <div class="form-group">
+                <label style="color:#ef4444;">Estado en Caliente a 150°C (Galgas mm)</label>
+                <input type="number" id="galgaCaliente" step="0.05" placeholder="Ej: 0.10" oninput="calcularMetrologia()">
+            </div>
+            <div class="form-group">
+                <label style="color:#ef4444;">Perfil de Deformación (Caliente)</label>
+                <select id="tipoConcavidadCaliente" onchange="calcularMetrologia()">
+                    <option value="Concavidad Reducida">Concavidad Reducida (Dilatación Correcta)</option>
+                    <option value="Se Mantiene Estable">Se Mantiene Estable (Sin cambio)</option>
+                    <option value="Plana Absoluta">Plana Absoluta (0.0 mm)</option>
+                    <option value="Convexidad (Abombada)">Convexidad / Abombada en Caliente (Bailarina)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="metric-display">
+                <label>Diagnóstico en Frío</label>
+                <div id="badge-planitud" class="status-badge">Sin Medición</div>
+            </div>
+            <div class="metric-display" style="border-color: #ef4444;">
+                <label style="color:#f87171;">Variación Térmica (Delta Δ)</label>
+                <div id="resultado-delta-galga" class="thickness-value" style="color:#f87171; font-size:1.5rem;">0.00 mm</div>
+                <div id="badge-planitud-caliente" class="status-badge">Sin Medición</div>
+            </div>
         </div>
     </div>
 
@@ -531,7 +555,7 @@
                         <td id="res-pared-borde">-</td>
                     </tr>
                     <tr>
-                        <td><strong>Planitud / Concavidad</strong></td>
+                        <td><strong>Planitud / Concavidad (Frío vs 150°C)</strong></td>
                         <td id="res-planitud">-</td>
                     </tr>
                     <tr>
@@ -636,7 +660,7 @@
             let lecturaVarilla = parseFloat(document.getElementById('mint').value) || 0;
             let alturaExtMm = parseFloat(document.getElementById('alturaExtMm').value) || 0;
 
-            // CLASIFICACIÓN DE PESO Y AGILIDAD (Desplazada y gestionada internamente para el veredicto y tablas)
+            // CLASIFICACIÓN DE PESO Y AGILIDAD
             let clasificacionPeso = "-";
             if (pesoVal > 0) {
                 let limiteLiviano = dSup >= 28 ? 900 : (dSup >= 24 ? 800 : 650);
@@ -886,15 +910,54 @@
                 cardCocinado.style.display = "none";
             }
 
+            // LÓGICA REVISADA: SECCIÓN 3 (PLANITUD FRÍO VS CALIENTE Y DELTA)
             let gFrio = parseFloat(document.getElementById('galgaFrio').value) || 0;
             let tConc = document.getElementById('tipoConcavidad').value;
             let bPlan = document.getElementById('badge-planitud');
-            if (gFrio > 0) {
-                bPlan.innerText = `${tConc} (${gFrio} mm) - Ok DIN`;
-                bPlan.style.backgroundColor = "var(--status-green)";
+
+            if (gFrio > 0 || tConc === "Plana Absoluta") {
+                if (tConc === "Concavidad Correcta") {
+                    bPlan.innerText = `${tConc} (${gFrio} mm) - Ok DIN`;
+                    bPlan.style.backgroundColor = "var(--status-green)";
+                } else if (tConc === "Plana Absoluta") {
+                    bPlan.innerText = `Plana Absoluta (0.0 mm) - Tolerable`;
+                    bPlan.style.backgroundColor = "var(--status-yellow)";
+                } else {
+                    bPlan.innerText = `Convexidad (${gFrio} mm) - Inestable`;
+                    bPlan.style.backgroundColor = "var(--status-red)";
+                }
             } else {
                 bPlan.innerText = "Sin Medición";
                 bPlan.style.backgroundColor = "var(--border-color)";
+            }
+
+            let gCalienteInput = document.getElementById('galgaCaliente').value;
+            let gCaliente = parseFloat(gCalienteInput) || 0;
+            let tConcCaliente = document.getElementById('tipoConcavidadCaliente').value;
+            let bPlanCaliente = document.getElementById('badge-planitud-caliente');
+            let resDelta = document.getElementById('resultado-delta-galga');
+
+            if (gCalienteInput !== "" || tConcCaliente === "Plana Absoluta") {
+                let delta = Math.abs(gFrio - gCaliente);
+                resDelta.innerText = delta.toFixed(2) + " mm";
+
+                if (tConcCaliente === "Convexidad (Abombada)") {
+                    bPlanCaliente.innerText = `Caliente: Convexidad (${gCaliente} mm) - BAILARINA`;
+                    bPlanCaliente.style.backgroundColor = "var(--status-red)";
+                } else if (tConcCaliente === "Concavidad Reducida") {
+                    bPlanCaliente.innerText = `Caliente: Concavidad (${gCaliente} mm) - ÓPTIMO`;
+                    bPlanCaliente.style.backgroundColor = "var(--status-green)";
+                } else if (tConcCaliente === "Se Mantiene Estable") {
+                    bPlanCaliente.innerText = `Caliente: Estable (${gCaliente} mm) - EXCELENTE`;
+                    bPlanCaliente.style.backgroundColor = "var(--status-green)";
+                } else {
+                    bPlanCaliente.innerText = `Caliente: Plana (0.0 mm) - ACEPTABLE`;
+                    bPlanCaliente.style.backgroundColor = "var(--accent-blue)";
+                }
+            } else {
+                resDelta.innerText = "0.00 mm";
+                bPlanCaliente.innerText = "Sin Medición";
+                bPlanCaliente.style.backgroundColor = "var(--border-color)";
             }
 
             let tDisco = document.getElementById('tipoDiscoFondo').value;
@@ -964,7 +1027,15 @@
             document.getElementById('res-pieza').innerText = `${tipo} ${marca} ${modelo} (${mat})`;
             document.getElementById('res-peso').innerText = pesoVal > 0 ? `${pesoVal} g (${clasificacionPeso})` : '-';
             document.getElementById('res-pared-borde').innerText = `${gPared > 0 ? gPared.toFixed(2) + ' mm' : '-'} / ${tBorde}`;
-            document.getElementById('res-planitud').innerText = `${tConc} (${gFrio} mm)`;
+            
+            // ACTUALIZACIÓN DE RESUMEN DE PLANITUD (FRÍO Y CALIENTE)
+            let txtPlanitudResumen = `${tConc} (${gFrio} mm)`;
+            if (gCalienteInput !== "" || tConcCaliente === "Plana Absoluta") {
+                let delta = Math.abs(gFrio - gCaliente);
+                txtPlanitudResumen += ` | Caliente 150°C: ${tConcCaliente} (${gCaliente} mm) [Δ ${delta.toFixed(2)} mm]`;
+            }
+            document.getElementById('res-planitud').innerText = txtPlanitudResumen;
+            
             document.getElementById('res-fondo-mag').innerText = `${tDisco} (${fMag})`;
             document.getElementById('res-balance').innerText = balanceCompleto;
             
@@ -1163,6 +1234,10 @@
             let fijacionStr = Array.isArray(opcionesSeleccionadas.fijacion) ? opcionesSeleccionadas.fijacion.join(', ') : '';
             let ergonomiaStr = Array.isArray(opcionesSeleccionadas.ergonomia) ? opcionesSeleccionadas.ergonomia.join(', ') : '';
 
+            let gFrio = parseFloat(document.getElementById('galgaFrio').value) || 0;
+            let gCaliente = parseFloat(document.getElementById('galgaCaliente').value) || 0;
+            let delta = Math.abs(gFrio - gCaliente);
+
             let data = [
                 ["CAMPO", "VALOR"],
                 ["Marca", document.getElementById('marca').value],
@@ -1179,7 +1254,11 @@
                 ["Capacidad Real (L)", document.getElementById('capReal').value],
                 ["% Aprovechamiento Base", document.getElementById('pctUtil').value],
                 ["% Cobertura Inducción", document.getElementById('pctInduccion').value],
-                ["Planitud / Galgas", document.getElementById('galgaFrio').value],
+                ["Planitud Frío (Galgas mm)", gFrio],
+                ["Perfil Deformación (Frío)", document.getElementById('tipoConcavidad').value],
+                ["Planitud Caliente 150°C (Galgas mm)", document.getElementById('galgaCaliente').value],
+                ["Perfil Deformación (Caliente)", document.getElementById('tipoConcavidadCaliente').value],
+                ["Variación Térmica Delta (mm)", delta.toFixed(2)],
                 ["Tipo Disco Inducción", document.getElementById('tipoDiscoFondo').value],
                 ["Fijación Mango (Múltiple)", fijacionStr],
                 ["Balance Mango", document.getElementById('balanceMango').value],
