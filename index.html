@@ -148,7 +148,7 @@
     <!-- 2. METROLOGÍA Y GEOMETRÍA -->
     <div class="card">
         <h2>2. Metrología y Geometría de Base</h2>
-        
+
         <label>A. Espesor de Fondo Difusor y Profundidad</label>
         <div class="grid-2">
             <div class="form-group">
@@ -355,7 +355,7 @@
     <!-- 5. MONTAJE, BALANCE Y ERGONOMÍA -->
     <div class="card">
         <h2>5. Montaje, Balance y Ergonomía</h2>
-        
+
         <div class="form-group">
             <label>Fijación del Mango/Asas (Selección Múltiple)</label>
             <div class="btn-grid-4" id="group-fijacion">
@@ -428,7 +428,7 @@
         <div class="protocol-note">
             <strong>Protocolo Térmico:</strong> Al alcanzar 150°C, se retira de la fuente de calor. Se miden los 5 puntos iniciales, y tras 3 minutos se evalúa la inercia térmica y el reparto.
         </div>
-        
+
         <label style="color:#38bdf8; margin-bottom:6px; display:block;">A. Medición Inicial a 150°C (Centro y 4 Puntos)</label>
         <div class="grid-3">
             <div class="form-group">
@@ -526,7 +526,7 @@
     <!-- 8. VALORACIÓN Y EXPORTACIÓN -->
     <div class="card">
         <h2>8. Observaciones Finales y Exportación</h2>
-        
+
         <div class="form-group">
             <label>Observaciones Técnicas / Comentarios</label>
             <textarea id="observaciones" rows="4" placeholder="Comentarios del test, antiadherente, ergonomía..." oninput="calcularMetrologia()"></textarea>
@@ -677,7 +677,7 @@
             if (alturaExtMm > 0 && lecturaVarilla > 0) {
                 grosorFondoMm = Math.abs(lecturaVarilla - alturaExtMm);
                 document.getElementById('resultado-fondo').innerText = grosorFondoMm.toFixed(1) + " mm";
-                
+
                 let bFondo = document.getElementById('badge-fondo');
                 if (grosorFondoMm >= 5.0) {
                     bFondo.innerText = "Excelente Fondo Difusor";
@@ -727,112 +727,132 @@
 
             if (gPared > 0) {
                 document.getElementById('resultado-pared').innerText = gPared.toFixed(2) + " mm";
-                
+
                 if (mat === "Alum. Prensado") {
-                    if (gPared >= 2.0 && gPared <= 2.5) {
-                        bParedEst.innerText = "Prensado Estándar / Aceptable";
+                    if (gPared >= 1.5 && gPared <= 2.5) {
+                        bParedEst.innerText = "Prensado Estándar";
                         bParedEst.style.backgroundColor = "var(--accent-blue)";
-                        txtComentarioBorde.innerText = "Espesor correcto para gama económica/media de aluminio prensado.";
-                    } else if (gPared < 2.0) {
-                        bParedEst.innerText = "Prensado Muy Fino / Ligero";
-                        bParedEst.style.backgroundColor = "var(--status-yellow)";
-                        txtComentarioBorde.innerText = "Alerta: Espesor bajo, alta propensión a deformación por choque térmico.";
+                        txtComentarioBorde.innerText = "Espesor en rango estándar para aluminio prensado.";
+                    } else if (gPared < 1.5) {
+                        bParedEst.innerText = "ALERTA METROLÓGICA";
+                        bParedEst.style.backgroundColor = "var(--status-red)";
+                        txtComentarioBorde.innerText = `Problema: Chapa demasiado fina (${gPared.toFixed(2)} mm). Rango correcto: 1.5 mm a 2.5 mm.`;
                     } else {
-                        bParedEst.innerText = "Prensado Grueso (Sobrestándar)";
+                        bParedEst.innerText = "Prensado Sobrestándar";
                         bParedEst.style.backgroundColor = "var(--status-green)";
-                        txtComentarioBorde.innerText = "Excelente grosor para ser una pieza de aluminio prensado.";
+                        txtComentarioBorde.innerText = "Grosor por encima del estándar de aluminio prensado.";
                     }
                 } else if (mat === "Alum. Forjado") {
-                    if (gPared >= 3.0 && gPared <= 4.0) {
-                        bParedEst.innerText = "Forjado Óptimo / Equilibrado";
+                    if (gPared >= 2.5 && gPared <= 4.5) {
+                        bParedEst.innerText = "Forjado Estándar";
                         bParedEst.style.backgroundColor = "var(--status-green)";
-                        txtComentarioBorde.innerText = "Cumple perfectamente con el estándar de solidez y reparto en aluminio forjado.";
-                    } else if (gPared < 3.0) {
-                        bParedEst.innerText = "Forjado Justo / Delgado";
-                        bParedEst.style.backgroundColor = "var(--status-yellow)";
-                        txtComentarioBorde.innerText = "Atención: Por debajo del umbral recomendado de 3 mm para forjado.";
+                        txtComentarioBorde.innerText = "Espesor dentro del rango técnico para aluminio forjado.";
+                    } else if (gPared < 2.5) {
+                        bParedEst.innerText = "ALERTA METROLÓGICA";
+                        bParedEst.style.backgroundColor = "var(--status-red)";
+                        txtComentarioBorde.innerText = `Problema: Pared demasiado fina para forjado (${gPared.toFixed(2)} mm). Rango correcto: 2.5 mm a 4.5 mm.`;
                     } else {
-                        bParedEst.innerText = "Forjado Pesado / Robusta";
+                        bParedEst.innerText = "Forjado Pesado";
                         bParedEst.style.backgroundColor = "var(--status-green)";
-                        txtComentarioBorde.innerText = "Espesor superior que aporta gran inercia térmica.";
+                        txtComentarioBorde.innerText = "Gran masa térmica en aluminio forjado.";
                     }
                 } else if (mat === "Alum. Fundido") {
                     if (gPared >= 4.0 && gPared <= 6.0) {
-                        bParedEst.innerText = "Fundición Real / Alta Inercia";
+                        bParedEst.innerText = "Fundición Real";
                         bParedEst.style.backgroundColor = "var(--status-green)";
-                        txtComentarioBorde.innerText = "Estructura maciza óptima con gran retención de calor.";
+                        txtComentarioBorde.innerText = "Estructura maciza correspondiente a fundición real.";
                     } else if (gPared < 4.0) {
-                        bParedEst.innerText = "Fundición Fina / No Estándar";
+                        bParedEst.innerText = "ALERTA METROLÓGICA";
                         bParedEst.style.backgroundColor = "var(--status-red)";
-                        txtComentarioBorde.innerText = "Alerta: El espesor es bajo para una fundición real (die-cast).";
+                        txtComentarioBorde.innerText = `Problema: Espesor bajo para una fundición real (${gPared.toFixed(2)} mm). Rango correcto: 4.0 mm a 6.0 mm.`;
                     } else {
-                        bParedEst.innerText = "Fundición Extraordinaria";
+                        bParedEst.innerText = "Fundición Pesada";
                         bParedEst.style.backgroundColor = "var(--status-green)";
-                        txtComentarioBorde.innerText = "Pieza extremadamente maciza y pesada.";
+                        txtComentarioBorde.innerText = "Pieza extremadamente maciza.";
                     }
                 } else if (mat === "Inox (Multicapa 3 Capas)") {
-                    if (gPared >= 2.0) {
-                        bParedEst.innerText = "Tri-Ply 3 Capas Robusta / Óptima";
+                    if (gPared >= 2.3 && gPared <= 3.0) {
+                        bParedEst.innerText = "Tri-Ply 3 Capas Óptimo";
                         bParedEst.style.backgroundColor = "var(--status-green)";
-                        txtComentarioBorde.innerText = "Buen grosor en estructura sándwich acero-aluminio-acero.";
+                        txtComentarioBorde.innerText = "Espesor correcto en estructura multicapa 3-Ply.";
+                    } else if (gPared < 2.3) {
+                        bParedEst.innerText = "ALERTA METROLÓGICA";
+                        bParedEst.style.backgroundColor = "var(--status-red)";
+                        txtComentarioBorde.innerText = `Problema: Lámina multicapa demasiado delgada (${gPared.toFixed(2)} mm). Rango correcto: 2.3 mm a 3.0 mm.`;
                     } else {
-                        bParedEst.innerText = "Tri-Ply 3 Capas Fina";
-                        bParedEst.style.backgroundColor = "var(--status-yellow)";
-                        txtComentarioBorde.innerText = "Espesor justo en paredes para una estructura multicapa.";
+                        bParedEst.innerText = "Tri-Ply Pesado";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Multicapa de gran grosor.";
                     }
                 } else if (mat === "Inox (Multicapa 5 Capas)") {
-                    if (gPared >= 2.3) {
-                        bParedEst.innerText = "Multicapa 5 Capas Profesional";
+                    if (gPared >= 3.0 && gPared <= 3.5) {
+                        bParedEst.innerText = "Multicapa 5 Capas Óptimo";
                         bParedEst.style.backgroundColor = "var(--status-green)";
-                        txtComentarioBorde.innerText = "Excelente distribución lateral del calor con múltiples capas técnicas.";
+                        txtComentarioBorde.innerText = "Grosor correspondiente a un 5-Ply real.";
+                    } else if (gPared < 3.0) {
+                        bParedEst.innerText = "ALERTA METROLÓGICA";
+                        bParedEst.style.backgroundColor = "var(--status-red)";
+                        txtComentarioBorde.innerText = `Problema: Grosor insuficiente para 5 capas (${gPared.toFixed(2)} mm). Rango correcto: 3.0 mm a 3.5 mm.`;
                     } else {
-                        bParedEst.innerText = "Multicapa 5 Capas Estándar";
-                        bParedEst.style.backgroundColor = "var(--accent-blue)";
-                        txtComentarioBorde.innerText = "Estructura multicapa avanzada.";
+                        bParedEst.innerText = "5-Ply Robusto";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Excelente estructura de 5 capas.";
                     }
                 } else if (mat === "Inox (Multicapa 7 Capas)") {
-                    if (gPared >= 2.5) {
-                        bParedEst.innerText = "Multicapa Máxima (7 Capas) / Élite";
+                    if (gPared >= 3.5 && gPared <= 4.2) {
+                        bParedEst.innerText = "Multicapa 7 Capas Óptimo";
                         bParedEst.style.backgroundColor = "var(--status-green)";
-                        txtComentarioBorde.innerText = "Máxima complejidad técnica y conductividad integral en todo el cuerpo.";
+                        txtComentarioBorde.innerText = "Máxima complejidad técnica con grosor adecuado.";
+                    } else if (gPared < 3.5) {
+                        bParedEst.innerText = "ALERTA METROLÓGICA";
+                        bParedEst.style.backgroundColor = "var(--status-red)";
+                        txtComentarioBorde.innerText = `Problema: Grosor insuficiente para 7 capas (${gPared.toFixed(2)} mm). Rango correcto: 3.5 mm a 4.2 mm.`;
                     } else {
-                        bParedEst.innerText = "Multicapa 7 Capas";
-                        bParedEst.style.backgroundColor = "var(--accent-blue)";
-                        txtComentarioBorde.innerText = "Estructura de alta gama.";
+                        bParedEst.innerText = "7-Ply Élite";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Construcción 7-Ply de máxima robustez.";
                     }
                 } else if (mat === "Inox (Fondo Difusor)") {
-                    if (gPared >= 0.8) {
-                        bParedEst.innerText = "Pared Inox Correcta (Resistente)";
+                    if (gPared >= 0.6 && gPared <= 1.0) {
+                        bParedEst.innerText = "Pared Inox Correcta";
                         bParedEst.style.backgroundColor = "var(--accent-blue)";
-                        txtComentarioBorde.innerText = "Paredes de acero idóneas para evitar excesos de peso (la inercia la da el fondo).";
+                        txtComentarioBorde.innerText = "Espesor lateral dentro del rango estándar.";
+                    } else if (gPared < 0.6) {
+                        bParedEst.innerText = "ALERTA METROLÓGICA";
+                        bParedEst.style.backgroundColor = "var(--status-red)";
+                        txtComentarioBorde.innerText = `Problema: Pared demasiado delgada (${gPared.toFixed(2)} mm). Rango correcto: 0.6 mm a 1.0 mm.`;
                     } else {
-                        bParedEst.innerText = "Pared Inox Muy Fina";
-                        bParedEst.style.backgroundColor = "var(--status-yellow)";
-                        txtComentarioBorde.innerText = "Estructura ligera propensa a flexión lateral.";
+                        bParedEst.innerText = "Pared Inox Reforzada";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Estructura lateral muy sólida.";
                     }
                 } else if (mat === "Hierro Fundido") {
-                    if (gPared >= 3.5) {
+                    if (gPared >= 4.0 && gPared <= 6.0) {
                         bParedEst.innerText = "Hierro Fundido Óptimo";
                         bParedEst.style.backgroundColor = "var(--status-green)";
-                        txtComentarioBorde.innerText = "Inercia térmica brutal y durabilidad generacional.";
-                    } else {
-                        bParedEst.innerText = "Hierro Fundido Deficiente";
+                        txtComentarioBorde.innerText = "Estructura correcta para hierro fundido.";
+                    } else if (gPared < 4.0) {
+                        bParedEst.innerText = "ALERTA METROLÓGICA";
                         bParedEst.style.backgroundColor = "var(--status-red)";
-                        txtComentarioBorde.innerText = "Alerta: Demasiado delgado para considerarse hierro fundido de calidad.";
+                        txtComentarioBorde.innerText = `Problema: Pared delgada con riesgo de rotura (${gPared.toFixed(2)} mm). Rango correcto: 4.0 mm a 6.0 mm.`;
+                    } else {
+                        bParedEst.innerText = "Hierro Fundido Pesado";
+                        bParedEst.style.backgroundColor = "var(--status-green)";
+                        txtComentarioBorde.innerText = "Pieza extremadamente sólida y pesada.";
                     }
                 } else if (mat === "Acero Carbono") {
-                    if (gPared >= 2.0 && gPared <= 3.0) {
-                        bParedEst.innerText = "Acero al Carbono Profesional";
+                    if (gPared >= 2.5 && gPared <= 3.0) {
+                        bParedEst.innerText = "Acero Carbono Profesional";
                         bParedEst.style.backgroundColor = "var(--status-green)";
-                        txtComentarioBorde.innerText = "Excelente equilibrio entre ligereza de manejo y resistencia a la deformación.";
-                    } else if (gPared < 2.0) {
-                        bParedEst.innerText = "Chapa de Acero Muy Fina";
-                        bParedEst.style.backgroundColor = "var(--status-yellow)";
-                        txtComentarioBorde.innerText = "Atención: Tiende a alabearse con facilidad ante calor directo fuerte.";
+                        txtComentarioBorde.innerText = "Espesor óptimo profesional.";
+                    } else if (gPared < 2.5) {
+                        bParedEst.innerText = "ALERTA METROLÓGICA";
+                        bParedEst.style.backgroundColor = "var(--status-red)";
+                        txtComentarioBorde.innerText = `Problema: Chapa ligera propensa a abombarse (${gPared.toFixed(2)} mm). Rango correcto: 2.5 mm a 3.0 mm.`;
                     } else {
-                        bParedEst.innerText = "Acero al Carbono Pesado";
+                        bParedEst.innerText = "Acero Carbono Pesado";
                         bParedEst.style.backgroundColor = "var(--status-green)";
-                        txtComentarioBorde.innerText = "Chapa gruesa de alta durabilidad profesional.";
+                        txtComentarioBorde.innerText = "Chapa de alto grosor y durabilidad.";
                     }
                 }
             }
@@ -996,7 +1016,7 @@
             let p2 = document.getElementById('tempP2').value;
             let p3 = document.getElementById('tempP3').value;
             let p4 = document.getElementById('tempP4').value;
-            
+
             let t3C = parseFloat(document.getElementById('t3_centro').value) || 0;
             let t3P1 = parseFloat(document.getElementById('t3_p1').value) || 0;
             let t3P2 = parseFloat(document.getElementById('t3_p2').value) || 0;
@@ -1027,7 +1047,7 @@
             document.getElementById('res-pieza').innerText = `${tipo} ${marca} ${modelo} (${mat})`;
             document.getElementById('res-peso').innerText = pesoVal > 0 ? `${pesoVal} g (${clasificacionPeso})` : '-';
             document.getElementById('res-pared-borde').innerText = `${gPared > 0 ? gPared.toFixed(2) + ' mm' : '-'} / ${tBorde}`;
-            
+
             // ACTUALIZACIÓN DE RESUMEN DE PLANITUD (FRÍO Y CALIENTE)
             let txtPlanitudResumen = `${tConc} (${gFrio} mm)`;
             if (gCalienteInput !== "" || tConcCaliente === "Plana Absoluta") {
@@ -1035,10 +1055,10 @@
                 txtPlanitudResumen += ` | Caliente 150°C: ${tConcCaliente} (${gCaliente} mm) [Δ ${delta.toFixed(2)} mm]`;
             }
             document.getElementById('res-planitud').innerText = txtPlanitudResumen;
-            
+
             document.getElementById('res-fondo-mag').innerText = `${tDisco} (${fMag})`;
             document.getElementById('res-balance').innerText = balanceCompleto;
-            
+
             document.getElementById('res-temp-150').innerText = c150 ? `C: ${c150}°C | P1: ${p1||'-'} | P2: ${p2||'-'} | P3: ${p3||'-'} | P4: ${p4||'-'}` : '-';
             document.getElementById('res-inercia').innerText = t3C ? `C: ${t3C}°C | P1: ${t3P1||'-'} | P2: ${t3P2||'-'} | P3: ${t3P3||'-'} | P4: ${t3P4||'-'}` : '-';
             document.getElementById('res-boil').innerText = pBurb || '-';
@@ -1139,7 +1159,7 @@
             let alturaExtMm = parseFloat(document.getElementById('alturaExtMm').value) || 0;
             let lecturaVarilla = parseFloat(document.getElementById('mint').value) || 0;
             let fondoMm = Math.abs(lecturaVarilla - alturaExtMm);
-            
+
             let t3C = parseFloat(document.getElementById('t3_centro').value) || 0;
             let t3P1 = parseFloat(document.getElementById('t3_p1').value) || 0;
             let t3P2 = parseFloat(document.getElementById('t3_p2').value) || 0;
@@ -1179,11 +1199,11 @@
 
             let scoreTermico = 0;
             let ensayosCompletos = (t3C > 0 && t3P1 > 0 && t3P2 > 0 && t3P3 > 0 && t3P4 > 0 && pBurb !== "");
-            
+
             if (ensayosCompletos) {
                 let periferiaT3 = [t3P1, t3P2, t3P3, t3P4];
                 let t3Spread = Math.max(...periferiaT3) - Math.min(...periferiaT3);
-                
+
                 if (t3Spread <= 5 && pBurb === "100% Uniforme") {
                     scoreTermico = 4.0;
                 } else if (t3Spread <= 10 && pBurb !== "Burbujeo Irregular") {
